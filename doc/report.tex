@@ -66,9 +66,9 @@ the KKT system \cite{Haber2000}
 \bq
 \left(
 \begin{array}{ccc}
-\nabla^2_{\mbf{m}}\mcl{L}&\nabla^2_{\mbf{m},\mbf{u}}\mcl{L}&\nabla^2_{\mbf{m},\mbf{v}}\mcl{L}\\
-\nabla^2_{\mbf{u},\mbf{m}}\mcl{L}&\nabla^2_{\mbf{u}}\mcl{L}&\nabla^2_{\mbf{u},\mbf{v}}\mcl{L}\\
-\nabla^2_{\mbf{v},\mbf{m}}\mcl{L}&\nabla^2_{\mbf{v},\mbf{u}}\mcl{L}&\nabla^2_{\mbf{v}}\mcl{L}\\
+R&K^*&G^*\\
+K&P^*P&A^*\\
+G&A&\\
 \end{array}
 \right)
 \left(
@@ -80,13 +80,25 @@ the KKT system \cite{Haber2000}
 \right)=
 -\left(
 \begin{array}{c}
-\nabla_{\mbf{m}}\mcl{L}\\
-\nabla_{\mbf{u}}\mcl{L}\\
-\nabla_{\mbf{v}}\mcl{L}\\
+\mcl{L}_{\mbf{m}}\\
+\mcl{L}_{\mbf{u}}\\
+\mcl{L}_{\mbf{v}}\\
 \end{array}
 \right),
 \eq
-and updating $\mbf{m}:=\mbf{m} + \delta\mbf{m}$, etc.
+where
+\bq
+\mcl{L}_{\mbf{m}} &=& G(\mbf{m},\mbf{u})^*\mathbf{v},\\
+\mcl{L}_{\mbf{u}} &=& A(\mathbf{m})^*\mathbf{v} + P^*(P\mathbf{u} - \mathbf{d}),\\
+\mcl{L}_{\mbf{v}} &=& A(\mathbf{m})\mathbf{u} - \mathbf{q},\\
+\eq
+and
+\bq
+G(\mbf{m},\mbf{u}) &=& \frac{\partial A(\mbf{m})\mbf{u}}{\partial \mbf{m}},\\
+K(\mbf{m},\mbf{v}) &=& \frac{\partial A(\mbf{m})^*\mbf{v}}{\partial \mbf{m}},\\
+R(\mbf{m},\mbf{u},\mbf{v}) &=& \frac{\partial G(\mbf{m},\mbf{u})^*\mbf{v}}{\partial \mbf{m}}.
+\eq
+These Jacobian matrices are typically sparse and can be computed analytically.
 
 An advantages of such an `all-at-once' approach are that it eliminates the need to
 solve the PDEs explicitly. However, this approach is often unfeasible
@@ -110,12 +122,18 @@ $\phi$ are given by
 && + K(\mbf{m},\overline{\mbf{v}})^*A(\mbf{m})^{-*}G(\mbf{m},\overline{\mbf{u}}) + G(\mbf{m},\overline{\mbf{u}})^*A(\mbf{m})^{-*}K(\mbf{m},\overline{\mbf{v}})\nonumber\\
 && + R(\mbf{m},\overline{\mbf{u}},\overline{\mbf{v}}).
 \eq
-where $\overline{\mbf{v}} = A(\mbf{m})^{-*}P^*\left(\mbf{d} - P\overline{\mbf{u}}\right)$ and 
+where $\overline{\mbf{v}} = A(\mbf{m})^{-*}P^*\left(\mbf{d} - P\overline{\mbf{u}}\right)$.
+
+The basic algorithm for minimizing $\phi(\mathbf{m})$ is
 \bq
-G(\mbf{m},\mbf{u}) &=& \frac{\partial A(\mbf{m})\mbf{u}}{\partial \mbf{m}},\\
-K(\mbf{m},\mbf{v}) &=& \frac{\partial A(\mbf{m})^*\mbf{v}}{\partial \mbf{m}},\\
-R(\mbf{m},\mbf{u},\mbf{v}) &=& \frac{\partial G(\mbf{m},\mbf{u})^*\mbf{v}}{\partial \mbf{m}}.
+\mathbf{u}^k  &=& A(\mathbf{m}^{k})^{-1}\mathbf{q}\\
+\mathbf{v}^k  &=& A(\mathbf{m}^k)^{-*}P^*(\mathbf{d} - P\mathbf{u}),\\
+\mathbf{m}^{k+1} &=& \mathbf{m}^k - \alpha^k G(\mathbf{m}^k,\mathbf{u}^k)^*\mathbf{v}^k,
 \eq
+where $\alpha^k$ is an appropriately chosen steplength.
+Note that this corresponds to a block-elimination of the KKT system and the iterates automatically
+satisfy $\mcl{L}_{\mathbf{u}}(\mbf{m}^k,\mbf{u}^k,\mbf{v}^k) = \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}^k,\mbf{v}^k) = 0$. 
+At a stationary point $\mbf{m}^k$ of $\phi$ we also satisfy $\mcl{L}_{\mathbf{m}}({\mbf{m}}^k,{\mbf{u}}^k,{\mbf{v}}^k) = 0$.
 
 The disadvantage of this approach is that it
 requires the solution of the PDEs at each update, making it computationally very expensive. 
@@ -189,7 +207,7 @@ optimziation problems in inverse problems, there are typically enough constraint
 discuss this in more detail in section \ref{algorithm}.
 
 \subsection{Exact penalty methods}
-For non-smooth penalty functions, such as $\pi(\cdot) = ||\cdot||_1$, the minimizer of $\phi_{\lambda}$
+For certain non-smooth penalty functions, such as $\pi(\cdot) = ||\cdot||_1$, the minimizer of $\phi_{\lambda}$
 is a solution of the constrained problem for \emph{any} $\lambda \geq \bar{\lambda}$ for some $\bar{\lambda}$
 \cite[Thm. 17.3]{Nocedal}. In practice, a continuation
 strategy is used to find a suitable value for $\lambda$. An advantage of this approach is that $\lambda$ does
@@ -203,105 +221,109 @@ Using a quadratic penalty function, the constrained problem (\ref{eq:constr}) is
 
 \bq
 \label{eq:penalty}
-\min_{\mbf{m},\mbf{u}} \Phi_{\lambda}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
+\min_{\mbf{m},\mbf{u}} \mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
 \eq
 The gradient and Hessian are given by
 \bq
-\nabla\phi_{\lambda} =\left(\begin{array}{c}
-\nabla_{\mbf{m}}\phi_{\lambda}\\
-\nabla_{\mbf{u}}\phi_{\lambda}\\
+\left(\begin{array}{c}
+\mcl{P}_{\mbf{m}}\\
+\mcl{P}_{\mbf{u}}\\
 \end{array}
 \right)
 = 
 \left(\begin{array}{c}
 \lambda G(\mbf{m},\mbf{u})^*\left(A(\mbf{m})\mbf{u} - \mbf{q}\right)\\
-P^*(P\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^*(A(\mbf{m})\mbf{u} - \mbf{q})\\
+P^*(P\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^*(A(\mbf{m})\mbf{u} - \mbf{d})\\
 \end{array}
 \right),
 \eq
 and
 \bq
-\nabla^2\Phi_{\lambda} &=&
+\nabla^2\mcl{P} &=&
 \left(
 \begin{array}{cc}
-\nabla_{\mbf{m}}^2\Phi_{\lambda}&\nabla_{\mbf{m},\mbf{u}}^2\Phi_{\lambda}\\
-\nabla_{\mbf{u},\mbf{m}}^2\Phi_{\lambda}&\nabla_{\mbf{u}}^2\Phi_{\lambda}\\
+\mcl{P}_{\mbf{m},\mbf{m}}&\mcl{P}_{\mbf{m},\mbf{u}}\\
+\mcl{P}_{\mbf{u},\mbf{m}}&\mcl{P}_{\mbf{u},\mbf{u}}\\
 \end{array}
 \right),
 \eq
 where
 \bq
-\nabla_{\mbf{m}}^2\Phi_{\lambda}(\mbf{m},\mbf{u}) &=& \lambda (G(\mbf{m},\mbf{u})^*G(\mbf{m},\mbf{u}) + R(\mbf{m},\mbf{u},A(\mbf{m})\mbf{u}-\mbf{q})),\\
-\nabla_{\mbf{u}}^2\Phi_{\lambda}(\mbf{m},\mbf{u}) &=&P^*P + \lambda A(\mbf{m})^*A(\mbf{m}),\\
-\nabla_{\mbf{m},\mbf{u}}^2\Phi_{\lambda}(\mbf{m},\mbf{u}) &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}) + A(\mbf{m})^*G(\mbf{m},\mbf{u})).\\
+\mcl{P}_{\mbf{m},\mbf{m}} &=& \lambda (G(\mbf{m},\mbf{u})^*G(\mbf{m},\mbf{u}) + R(\mbf{m},\mbf{u},A(\mbf{m})\mbf{u}-\mbf{q})),\\
+\mcl{P}_{\mbf{u},\mbf{u}} &=&P^*P + \lambda A(\mbf{m})^*A(\mbf{m}),\\
+\mcl{P}_{\mbf{m},\mbf{u}} &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}) + A(\mbf{m})^*G(\mbf{m},\mbf{u})).\\
 \eq
 Of course, optimization in the full $(\mbf{m},\mbf{u})$-space is not feasible for large-scale problems, so we 
 eliminate $\mbf{u}$ using a \emph{variational projection} approach \cite{Aravkin2012c} to define a reduced problem:
 \bq
 \label{eq:redpenalty}
-\min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}(\mbf{m})),
+\min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \mcl{P}(\mbf{m},\overline{\mbf{u}}_{\lambda}(\mbf{m})),
 \eq
-where $\overline{\mbf{u}}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \Phi_{\lambda}(\mbf{m},\mbf{u})$.
-We interpret the $\argmin$ in a loose sence, in that $\overline{\mbf{u}}_{\lambda}$ only needs to be
-a local minimizer.
-
+where $\overline{\mbf{u}}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \mcl{P}(\mbf{m},\mbf{u})$.
 It is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are given by 
-
 \bq
 \label{eq:gradpen}
-\nabla\phi_{\lambda}(\mbf{m}) &=& \nabla_{\mbf{m}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}),\\
+\nabla\phi_{\lambda}(\mbf{m}) &=& \mcl{P}_{\mbf{m}}(\mbf{m},\overline{\mbf{u}}_{\lambda}),\\
 \label{eq:hesspen}
-\nabla^2\phi_{\lambda}(\mbf{m}) &=& \nabla_{\mbf{m}}^2\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) \nonumber\\
+\nabla^2\phi_{\lambda}(\mbf{m}) &=& \mcl{P}_{\mbf{m}}^2\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) \nonumber\\
 &&-\nabla_{\mbf{m},\mbf{u}}^2\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda})\left(\nabla_{\mbf{u}}^2\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda})\right)^{-1}\nabla_{\mbf{u},\mbf{m}}^2\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}).
 \eq
-Note that $\nabla^2\phi_{\lambda}(\mbf{m})$ is the Schur complement of $\nabla^2\Phi_{\lambda}$.
+Note that $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\mcl{P}$.
 
-In section \ref{algorithm} we will use these expressions to devise an algorithm to solve 
-the unconstrained problem (\ref{eq:redpenalty}), but first we will show that minimizing $\phi_{\lambda}$ 
-is equivalent to minimizing $\Phi_{\lambda}$
-
-\begin{theorem}
-A local minimizer $\overline{\mbf{m}}_{\lambda}$ of $\phi_{\lambda}$ together with the corresponding $\overline{\mbf{u}}_{\lambda} = \argmin_{\mbf{u}} \Phi_{\lambda}(\overline{\mbf{m}},\mbf{u})$,
-are also a minimizer of $\Phi_{\lambda}$ and vice versa.
-\end{theorem}
-\begin{proof}
-Since $\overline{\mbf{u}}_{\lambda}$ is assumed to be a local minimizer of $\Phi_{\lambda}(\mbf{m},\cdot)$, it satisfies 
-the following optimality conditions:
-\[
-\nabla_{\mbf{u}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) = 0,
-\]
-and
-\[
-\nabla^2_{\mbf{u}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) \succ 0.
-\]
-Likewise, since $\overline{\mbf{m}}_{\lambda}$ is a local minimizer of $\phi_{\lambda}$, it satisfies
-\[
-\nabla_{\mbf{m}}\phi_{\lambda}(\overline{\mbf{m}}_{\lambda}) = 0,
-\]
-and
-\[
-\nabla^2_{\mbf{m}}\phi_{\lambda}(\overline{\mbf{m}}_{\lambda}) \succ 0.
-\]
-We have to show that the pair $(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})$ satisfy the first and second order
-optimilaty conditions of $\Phi_{\lambda}$. From the expression for the gradient of $\phi_{\lambda}$ (\ref{eq:gradpen}) it follows immediately
-that $\nabla\phi_{\lambda} = 0 \iff \nabla\Phi_{\lambda} = 0$.
-Since $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\Phi_{\lambda}$ it follows
-that $\nabla^2\phi \succ 0, \nabla^2_{\mbf{u}}\Phi \succ 0 \iff \nabla^2\Phi_{\lambda} \succ 0$ (cf. \cite[prop. 14.1]{Saad}).\qed
-\end{proof}
-
-Finally, we show that minimizing $\phi_{\lambda}$ is equivalent to minimizing $\phi$ as $\lambda \uparrow \infty$
-via the following Theorem.
-
-\begin{theorem}
-A (local) minimizer of $\phi_{\lambda}$ satisfies the first and second order optimality conditions of $\phi$ up
-to $\mcl{O}(\lambda^{-1})$.
-\end{theorem}
-\begin{proof}
-The optimzation problem for $\overline{\mbf{u}}_{\lambda}$ has a closed-form solution 
+The optimization problem for $\overline{\mbf{u}}_{\lambda}$ has a closed-form solution and 
+the basic algorithm for minimizing $\phi_{\lambda}$ is
 \bq
-\overline{\mbf{u}}_{\lambda} = \left(P^*P + \lambda A^*A \right)^{-1}\left(P^*\mbf{d} + \lambda A^*\mbf{q}\right),
+\mathbf{u}^k_{\lambda}  &=& \left(P^*P + \lambda A^*A \right)^{-1}\left(P^*\mbf{d} + \lambda A^*\mbf{q}\right)\\
+\mathbf{v}^k_{\lambda}  &=& \lambda(A(\mathbf{m}^k)\mathbf{u}^k - \mathbf{q}),\\
+\mathbf{m}^{k+1} &=& \mathbf{m}^k - \alpha^k G(\mathbf{m}^k,\mathbf{u}_{\lambda}^k)^*\mathbf{v}^k_{\lambda},
 \eq
-which can be re-written as
+where $\alpha^k$ is an appropriately chosen steplength. 
+Next, we show that this basic algorithm finds an approximate stationary point of the Lagrangian.
+%\begin{theorem}
+%A local minimizer $\overline{\mbf{m}}_{\lambda}$ of $\phi_{\lambda}$ together with the corresponding $\overline{\mbf{u}}_{\lambda} = \argmin_{\mbf{u}} \Phi_{\lambda}(\overline{\mbf{m}},\mbf{u})$,
+%are also a minimizer of $\Phi_{\lambda}$ and vice versa.
+%\end{theorem}
+%\begin{proof}
+%Since $\overline{\mbf{u}}_{\lambda}$ is assumed to be a local minimizer of $\Phi_{\lambda}(\mbf{m},\cdot)$, it satisfies 
+%the following optimality conditions:
+%\[
+%\nabla_{\mbf{u}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) = 0,
+%\]
+%and
+%\[
+%\nabla^2_{\mbf{u}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) \succ 0.
+%\]
+%Likewise, since $\overline{\mbf{m}}_{\lambda}$ is a local minimizer of $\phi_{\lambda}$, it satisfies
+%\[
+%\nabla_{\mbf{m}}\phi_{\lambda}(\overline{\mbf{m}}_{\lambda}) = 0,
+%\]
+%and
+%\[
+%\nabla^2_{\mbf{m}}\phi_{\lambda}(\overline{\mbf{m}}_{\lambda}) \succ 0.
+%\]
+%We have to show that the pair $(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})$ satisfy the first and second order
+%optimilaty conditions of $\Phi_{\lambda}$. From the expression for the gradient of $\phi_{\lambda}$ (\ref{eq:gradpen}) it follows immediately
+%that $\nabla\phi_{\lambda} = 0 \iff \nabla\Phi_{\lambda} = 0$.
+%Since $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\Phi_{\lambda}$ it follows
+%that $\nabla^2\phi \succ 0, \nabla^2_{\mbf{u}}\Phi \succ 0 \iff \nabla^2\Phi_{\lambda} \succ 0$ (cf. \cite[prop. 14.1]{Saad}).\qed
+%\end{proof}
+
+\begin{theorem}
+A stationary point, $\overline{\mbf{m}}_{\lambda}$ of $\phi_{\lambda}$ 
+along with the corresponding $\overline{\mbf{u}}_{\lambda}$ and $\overline{\mbf{v}}_{\lambda}$ satisfies 
+$\mcl{L}_{\mbf{u}} = \mcl{O}(\lambda^{-1})$ and $\mcl{L}_{\mbf{v}} = \mcl{L}_{\mbf{m}} = 0$.
+\end{theorem}
+\begin{proof}
+The stationary point $\overline{\mbf{m}}_{\lambda}$ satisfies $G(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})^*\overline{\mbf{v}}_{\lambda} = 0$.
+The corresponding state variables are given by
+\[
+\overline{\mbf{u}}_{\lambda} = \left(P^*P + \lambda A^*A \right)^{-1}\left(P^*\mbf{d} + \lambda A^*\mbf{q}\right),
+\]
+and
+\[
+\overline{\mbf{v}}_{\lambda} = \lambda(A(\overline{\mbf{m}}_{\lambda})\overline{\mbf{u}}_{\lambda} - \mathbf{q}).
+\]
+The estimated state can be re-written as
 \[
 \overline{\mbf{u}}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-*}P^*PA^{-1}\right)^{-1}\left(\lambda^{-1}A^{-*}P^*\mbf{d} + \mbf{q}\right).
 \]
@@ -310,57 +332,53 @@ and find that
 \bq
 \overline{\mbf{u}}_{\lambda} &=& A(\mbf{m})^{-1}\mbf{q}\nonumber\\
 &&+ \lambda^{-1}\left(A^{*}A\right)^{-1}P^*\left(\mbf{d} - PA^{-1}\mbf{q}\right)\nonumber\\
-&&- \lambda^{-2}\left(A^{*}A\right)^{-1}P^*P\left(A^{*}A\right)^{-1}P^*\mbf{d} + \mcl{O}(\lambda^{-3}),\\
-&=& \overline{\mbf{u}} + \mcl{O}(\lambda^{-1}).
+&&- \lambda^{-2}\left(A^{*}A\right)^{-1}P^*P\left(A^{*}A\right)^{-1}P^*\mbf{d} + \mcl{O}(\lambda^{-3}).
 \eq
-If we substitute this in the expression for the gradient of $\phi_{\lambda}$ we get
+If we substitute this in the expression for the gradient of the Lagrangian we find
 \bq
-\nabla\phi_{\lambda}(\mathbf{m}) &=& \lambda G(\mbf{m},\overline{\mbf{u}}_{\lambda})^*\left(A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\right)\nonumber\\
-&=& G(\mbf{m},\overline{\mbf{u}})^*\overline{\mbf{v}}  + \lambda^{-1}G(\mbf{m},A^{-1}\overline{\mbf{v}})^*\overline{\mbf{v}} + \mcl{O}(\lambda^{-2}) \nonumber\\
-&=& \nabla\phi(\mbf{m}) + \mcl{O}(\lambda^{-1}).
+\mcl{L}_{\mathbf{m}}(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda},\overline{\mbf{v}}_{\lambda}) &=& G(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})^*\overline{\mbf{v}}_{\lambda} = 0,
 \eq
-For the Hessian we find
+and
 \bq
-\nabla^2\phi_{\lambda}(\mbf{m}) &=& \nabla^2\phi(\mbf{m}) + \mcl{O}(\lambda^{-1}).
+\mcl{L}_{\mathbf{u}}(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda},\overline{\mbf{v}}_{\lambda}) &=& A(\overline{\mbf{m}}_{\lambda})^*\overline{\mbf{v}}_{\lambda} + P^*(P\overline{\mbf{u}}_{\lambda} - \mbf{d})\nonumber\\
+&=& \lambda A^*(A\overline{\mbf{u}}_{\lambda} - \mbf{q}) + P^*(P\overline{\mbf{u}}_{\lambda} - \mbf{d}) = 0,
 \eq
-Next, we need to show that 
-
-By assumption, $\overline{\mbf{m}}_{\lambda}$ is a local minimizer of $\phi_{\lambda}$ so that $\nabla\phi(\overline{\mbf{m}}_{\lambda}) = 0$ and
-$\nabla^2\phi(\overline{\mbf{m}}_{\lambda}) \succ 0$. If follows that
-\[
-\nabla\phi(\overline{\mbf{m}}_{\lambda}) = \mcl{O}(\lambda^{-1}).
-\]
-
-\[
-\nabla^2\phi(\overline{\mbf{m}}_{\lambda}) = \mcl{O}(\lambda^{-1})
-\]
-
+and finally,
+\bq
+\mcl{L}_{\mathbf{v}}(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda},\overline{\mbf{v}}_{\lambda}) &=& A(\overline{\mbf{m}}_{\lambda})\overline{\mbf{u}}_{\lambda} - \mbf{q}\nonumber\\
+&=& \lambda^{-1}A(\overline{\mbf{m}}_{\lambda})^{-*}P^*\left(\mbf{d} - PA(\overline{\mbf{m}}_{\lambda})^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-2}).
+\eq
+We find that 
+\bq
+\|\mcl{L}_{\mbf{v}}\|_2^2 \leq \|\mbf{d} - PA(\overline{\mbf{m}}_{\lambda})^{-1}\mbf{q}\|_2^2 + \mcl{O}(\lambda^{-2}).
+\eq
 \qed
 \end{proof}
-\section{Analysis of a toy problem}
-\label{toy}
-Before describing algorithms to minimize $\phi_{\mathrm{pen}}$, we will illustrate the potential benefits
-of the penalty approach over the conventional reduced approach with the help of a toy problem with
-\[
-A(\mbf{m}) = 
-\left(\begin{array}{cc}
-\frac{1}{2}&\frac{1}{4}\\
-\frac{1}{4}&1\\
-\end{array}\right),\quad
-q = \left(\begin{array}{c}
-1\frac{3}{4}\\
-2\frac{1}{4}\\
-\end{array}\right).
-\]
-The solution in this case is $\overline{m} = (1,1)$ and $\overline{u} =
-(1,1)$. We use a Gauss-Newton method to solve both (\ref{eq:redL}) and (\ref{eq:redP}), starting from $m = (2,2)$. We use $\lambda = 0.1$ for the penalty approach.
-Figure \ref{fig:opt} (a) shows the solution paths and (c) shows the convergence in terms of $||r||_2$ and $||c||_2$ for both the reduced
-(black) and penalty approaches (red). The penalty approach gets very
-close to the optimal solution in one iteration while the reduced
-approach takes a detour because it is forced to satisfy the constraint
-$c(m,u)=0$ at each iteration. Another perspective is offered by plotting the objective functions corresponding to the reduced and penalty approaches as a function of $m$.
-Figure \ref{fig:opt} (c) shows the reduced objective (\ref{eq:redL}) and (d) shows the penalty objective (\ref{eq:redP}). The reduced objective in this case is quite non-linear while the penalty objective is quadratic.
-These plots illustrate that the penalty formulation can indeed lead to an objective function that is much better behaved.
+
+%\section{Analysis of a toy problem}
+%\label{toy}
+%Before describing algorithms to minimize $\phi_{\mathrm{pen}}$, we will illustrate the potential benefits
+%of the penalty approach over the conventional reduced approach with the help of a toy problem with
+%\[
+%A(\mbf{m}) = 
+%\left(\begin{array}{cc}
+%\frac{1}{2}&\frac{1}{4}\\
+%\frac{1}{4}&1\\
+%\end{array}\right),\quad
+%q = \left(\begin{array}{c}
+%1\frac{3}{4}\\
+%2\frac{1}{4}\\
+%\end{array}\right).
+%\]
+%The solution in this case is $\overline{m} = (1,1)$ and $\overline{u} =
+%(1,1)$. We use a Gauss-Newton method to solve both (\ref{eq:redL}) and (\ref{eq:redP}), starting from $m = (2,2)$. We use $\lambda = 0.1$ for the penalty approach.
+%Figure \ref{fig:opt} (a) shows the solution paths and (c) shows the convergence in terms of $||r||_2$ and $||c||_2$ for both the reduced
+%(black) and penalty approaches (red). The penalty approach gets very
+%close to the optimal solution in one iteration while the reduced
+%approach takes a detour because it is forced to satisfy the constraint
+%$c(m,u)=0$ at each iteration. Another perspective is offered by plotting the objective functions corresponding to the reduced and penalty approaches as a function of $m$.
+%Figure \ref{fig:opt} (c) shows the reduced objective (\ref{eq:redL}) and (d) shows the penalty objective (\ref{eq:redP}). The reduced objective in this case is quite non-linear while the penalty objective is quadratic.
+%These plots illustrate that the penalty formulation can indeed lead to an objective function that is much better behaved.
 
 \section{Algorihtms}
 \label{algorithm}
@@ -373,9 +391,9 @@ The basic structure of
 
 
 \subsection{Computing the gradient and Hessian}
-Evaluation of $\phi_{\lambda}$ and its derivatives requires the minimization of $\Phi_{\lambda}$ w.r.t. $\mbf{u}$. 
+Evaluation of $\phi_{\lambda}$ and its derivatives requires the minimization of $\mcl{P}$ w.r.t. $\mbf{u}$. 
 Because of the block-structure of the problem and the linearity in $\mbf{u}$ this can be achieved by solving the 
-following overdetermined system for each $i$
+following (inconsistent) overdetermined system for each $i$
 
 \bq
 \label{eq:u_pen}
@@ -385,15 +403,15 @@ following overdetermined system for each $i$
 P
 \end{array}
 \right)
-\mbf{u}_{i} = 
+\mbf{u}_{i} \approx
 \left(
 \begin{array}{c}
 \sqrt{\lambda} \mbf{q}_{i}\\
 \mbf{d}_{i}
 \end{array}
-\right).
+\right),
 \eq
-
+in a least-squares sense.
 Since both $A_i$ and $P$ are sparse, we can efficiently solve this via direct (QR-) factorization or using an iterative method like LSQR or LSMR \cite{Paige1982,Fong2011}.
 Given these solutions $\{\mbf{u}_i\}$, the gradient and Gauss-Newton Hessian of $\phi_{\lambda}$ are given by (cf eq. \ref{eq:gradpen}-\ref{eq:hesspen})
 
@@ -456,72 +474,72 @@ for the wavefield at all timesteps, this is not feasible and a suitable
 time-stepping strategy will have to be developed to solve the augmented
 PDE without storing the wavefields for all timesteps.
 
-\item[Other PDE-constrained optimization problems]
-The penalty formulation can be applied to any PDE-constrained
-optimization problem. We can only expect an efficient implementation
-along the lines described in this paper, however, if the PDE is linear
-in the state variable. In particular, application to multi-parameter
-seismic inversion (e.g., visco-acoustic, variable density,
-visco-elastic) is straightfoward.
-
-\item[Dimensionality reduction]
-The computational cost may be reduced by using recently proposed
-dimensionality reduction techniques that essentially reduce the number
-of right-hand-sides of the PDE by random subselection or aggregration
-\cite{Haber2012,Friedlander2012,VanLeeuwen2012b}. These techniques can
-be directly included in the penalty formulation by introducing new
-sources and their corresponding data;
-\[
-\widetilde{\mbf{q}}_{kl'} = \sum_{l}w_{ll'}\mbf{q}_{kl}, \quad \widetilde{\mbf{d}}_{kl'} = \sum_{l}w_{ll'}\mbf{d}_{kl},
-\]
-where $l' = [1,2,\ldots,N_s']$ ($N_s' << N_s$) and $w_{l'l}$ are
-suitably chosen random weights.
-
-\item[Regularization] 
-Regularization penalties on the model $\mathbf{m}$ can be included in
-a trivial manner. Also, regularization techniques on the (Gauss-Newton)
-subproblems can be included. This includes for example $\ell_1$
-regularization as proposed by \cite{Li2012} and $\ell_2$ regularization
-as is used in trust-region methods. 
-
-\item[Penalties] 
-Penalties other than the $\ell_2$ norm on either the data-misfit or the
-constraint can be included in the formulation (\ref{eq:penalty}).
-However, this will most likely prevent us from solving for the
-wavefields efficiently via system of equations (\ref{eq:u_pen}). Still,
-most alternative penalties may be approximated by a weighted $\ell_2$
-norm, in which case a system like (\ref{eq:u_pen}) \emph{can} be formed 
-and solved via an iteratively re-weighted least-squares approach \cite{Bjorck1979}.
-
-\item[Nuisance parameters] 
-Formulations of the inverse problem may include additional
-parameters that need to be estimated. An example of this are the
-source-weights in the seismic applications. The penalty objective, in
-this case becomes
-\[
-\phi_{\lambda}(\mathbf{m},\mathbf{u},\theta) = \ts{\frac{1}{2}}\sum_{k,l}||\theta_{kl}P \mbf{u}_{kl} - \mbf{d}_{kl}||_2^2 + \lambda^2||\theta_{kl}A_k(\mbf{m})\mbf{u}_{kl} - \mbf{q}_{kl}||_2^2,
-\]
-The wavefield may be solved first from (\ref{eq:u_pen}) and subsequent
-minimization over $\theta$ for the given wavefields is trivial as a
-closed-form solution is available:
-\[
-\theta_{kl} = \frac{\mbf{u}_{kl}^*\left(P^*\mbf{d}_{kl} + \lambda^2A_k^*\mbf{q}_{kl}\right)}{||P\mbf{u}_{kl}||_2^2 + \lambda^2 ||A_k\mbf{u}_{kl}||_2^2}.
-\]
-
-This approach can be generalized to more complicated situations in which
-a closed-form solution is not available \cite{Aravkin2012c}.
-
-\item[Contination strategies for $\lambda$] 
-The experiments presented in this paper were done for a fixed value of
-$\lambda$. To ensure that one really solves the original constrained
-problem, however, a suitable strategy for increasing $\lambda$ needs to
-be developed.
-
-\item[Optimization strategies]
-In this paper we described a Gauss-Newton method to minimize the reduced
-penalty objective (\ref{eq:redpenalty}). Using the expressions for the gradient and Hessian presented in section 3.1, we can design other Newton variants. 
-
-Recently proposed stochastic algorithms aimed at dramatically reducing the cost of PDE-constrained optimization problems by working on a small subsets of the right-hand-sides \cite{Krebs09,Friedlander2012,Haber12,VanLeeuwen2012b} are directly applicable to this formulation.
+%\item[Other PDE-constrained optimization problems]
+%The penalty formulation can be applied to any PDE-constrained
+%optimization problem. We can only expect an efficient implementation
+%along the lines described in this paper, however, if the PDE is linear
+%in the state variable. In particular, application to multi-parameter
+%seismic inversion (e.g., visco-acoustic, variable density,
+%visco-elastic) is straightfoward.
+%
+%\item[Dimensionality reduction]
+%The computational cost may be reduced by using recently proposed
+%dimensionality reduction techniques that essentially reduce the number
+%of right-hand-sides of the PDE by random subselection or aggregration
+%\cite{Haber2012,Friedlander2012,VanLeeuwen2012b}. These techniques can
+%be directly included in the penalty formulation by introducing new
+%sources and their corresponding data;
+%\[
+%\widetilde{\mbf{q}}_{kl'} = \sum_{l}w_{ll'}\mbf{q}_{kl}, \quad \widetilde{\mbf{d}}_{kl'} = \sum_{l}w_{ll'}\mbf{d}_{kl},
+%\]
+%where $l' = [1,2,\ldots,N_s']$ ($N_s' << N_s$) and $w_{l'l}$ are
+%suitably chosen random weights.
+%
+%\item[Regularization] 
+%Regularization penalties on the model $\mathbf{m}$ can be included in
+%a trivial manner. Also, regularization techniques on the (Gauss-Newton)
+%subproblems can be included. This includes for example $\ell_1$
+%regularization as proposed by \cite{Li2012} and $\ell_2$ regularization
+%as is used in trust-region methods. 
+%
+%\item[Penalties] 
+%Penalties other than the $\ell_2$ norm on either the data-misfit or the
+%constraint can be included in the formulation (\ref{eq:penalty}).
+%However, this will most likely prevent us from solving for the
+%wavefields efficiently via system of equations (\ref{eq:u_pen}). Still,
+%most alternative penalties may be approximated by a weighted $\ell_2$
+%norm, in which case a system like (\ref{eq:u_pen}) \emph{can} be formed 
+%and solved via an iteratively re-weighted least-squares approach \cite{Bjorck1979}.
+%
+%\item[Nuisance parameters] 
+%Formulations of the inverse problem may include additional
+%parameters that need to be estimated. An example of this are the
+%source-weights in the seismic applications. The penalty objective, in
+%this case becomes
+%\[
+%\phi_{\lambda}(\mathbf{m},\mathbf{u},\theta) = \ts{\frac{1}{2}}\sum_{k,l}||\theta_{kl}P \mbf{u}_{kl} - \mbf{d}_{kl}||_2^2 + \lambda^2||\theta_{kl}A_k(\mbf{m})\mbf{u}_{kl} - \mbf{q}_{kl}||_2^2,
+%\]
+%The wavefield may be solved first from (\ref{eq:u_pen}) and subsequent
+%minimization over $\theta$ for the given wavefields is trivial as a
+%closed-form solution is available:
+%\[
+%\theta_{kl} = \frac{\mbf{u}_{kl}^*\left(P^*\mbf{d}_{kl} + \lambda^2A_k^*\mbf{q}_{kl}\right)}{||P\mbf{u}_{kl}||_2^2 + \lambda^2 ||A_k\mbf{u}_{kl}||_2^2}.
+%\]
+%
+%This approach can be generalized to more complicated situations in which
+%a closed-form solution is not available \cite{Aravkin2012c}.
+%
+%\item[Contination strategies for $\lambda$] 
+%The experiments presented in this paper were done for a fixed value of
+%$\lambda$. To ensure that one really solves the original constrained
+%problem, however, a suitable strategy for increasing $\lambda$ needs to
+%be developed.
+%
+%\item[Optimization strategies]
+%In this paper we described a Gauss-Newton method to minimize the reduced
+%penalty objective (\ref{eq:redpenalty}). Using the expressions for the gradient and Hessian presented in section 3.1, we can design other Newton variants. 
+%
+%Recently proposed stochastic algorithms aimed at dramatically reducing the cost of PDE-constrained optimization problems by working on a small subsets of the right-hand-sides \cite{Krebs09,Friedlander2012,Haber12,VanLeeuwen2012b} are directly applicable to this formulation.
 
 \end{description}
 
