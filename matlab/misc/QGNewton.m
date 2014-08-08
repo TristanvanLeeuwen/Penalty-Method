@@ -1,4 +1,4 @@
-function [x] = QGNewton(fh,x,options)
+function [x,info] = QGNewton(fh,x,options)
 % Simple Quasi/Gauss-Newton method with Wolfe linesearch
 %
 % use:
@@ -26,12 +26,13 @@ if nargin<3
 end
 
 % parse parameters
-tol     = getoption(options,'tol',1e-3);
+tol     = getoption(options,'tol',1e-6);
+lintol  = getoption(options,'lintol',1e-3);
 itermax = getoption(options,'maxit',10);
 M       = getoption(options,'M',5);
 fid     = getoption(options,'fid',1);
 write   = getoption(options,'write',0);
-method  = getoption(options,'method','Quasi');
+method  = getoption(options,'method','lbfgs');
 
 % initialization
 n         = length(x);
@@ -39,13 +40,15 @@ converged = 0;
 iter      = 0;
 S         = zeros(n,0);
 Y         = zeros(n,0);
+lambda    = 1;
 
 % initial evaluation
-[f,g,H]  = fh(x);
+[f,g,H,opt]  = fh(x);
 nfeval = 1;
-
-fprintf(fid,'# iter, # eval, stepsize, f(x)       , ||g(x)||_2\n');
-fprintf(fid,'%6d, %6d, %1.2e, %1.5e, %1.5e\n',iter,nfeval,1,f,norm(g));
+info   = [iter,nfeval,lambda,f,opt];
+fprintf(fid,'# iter, # eval, stepsize, f(x)       , ||L_m||_2,    ||L_u||_2,     ||L_v||_2\n');
+formatstr = '%6d, %6d, %1.2e, %1.5e, %1.5e, %1.5e, %1.5e\n';
+fprintf(fid,formatstr,info);
 if write
     dlmwrite(['x_' num2str(iter) '.dat'],x);
 end
@@ -53,10 +56,16 @@ end
 while ~converged    
     % compute search direction
     switch method
-        case 'Quasi'
-            s = B(-g,S,Y);
+        case 'lbfgs'
+            if (iter>0)&&(M>0)
+                s = B(-g,S,Y);
+                lambda = 1;
+            else
+                s = -g/norm(g);
+            end
         otherwise
-            [s,~,~,~] = pcg(H,-g,.1,10);
+            [s,~,~,ncg] = pcg(H,-g,lintol,50);
+            nfeval = nfeval + ncg;
     end
     p = -(s'*g)/(g'*g);
     
@@ -68,33 +77,34 @@ while ~converged
     end
     
     % linesearch
-    [ft,gt,Ht,lambda,lsiter] = wWolfeLS(fh,x,f,g,s);
+    [ft,gt,Ht,opt,lambda,lsiter] = wWolfeLS(fh,x,f,g,s,lambda);
     nfeval = nfeval + lsiter;
     
     % update
-    xt = x + lambda*s;
+    if lambda>0
+        xt = x + lambda*s;
 
-    S = [S xt - x];
-    Y = [Y gt - g];
+        S = [S xt - x];
+        Y = [Y gt - g];
 
-    if size(S,2)>M
-        S = S(:,end-M+1:end);
-        Y = Y(:,end-M+1:end);
+        if size(S,2)>M
+            S = S(:,end-M+1:end);
+            Y = Y(:,end-M+1:end);
+        end
+        f = ft;
+        g = gt;
+        H = Ht;
+        x = xt;
     end
-    f = ft;
-    g = gt;
-    H = Ht;
-    x = xt;
-    
     iter = iter + 1;
-    
-    fprintf(fid,'%6d, %6d, %1.2e, %1.5e, %1.5e\n',iter,nfeval,lambda,f,norm(g));
+    info   = [info;[iter,nfeval,lambda,f,opt]];
+    fprintf(fid,formatstr,info(end,:));
     if write
         dlmwrite(['x_' num2str(iter) '.dat'],x);
     end
     
     % check convergence
-    converged = (iter>=itermax)||(norm(g)<tol);
+    converged = (iter>=itermax)||(norm(g)<tol)||(lambda<1e-10);
     
 end
 
@@ -133,7 +143,7 @@ end
 if M>0 
     a = (Y(:,end)'*S(:,end)/(Y(:,end)'*Y(:,end)));
 else
-    a = 1/norm(x,2);
+    a = 1;
 end
 z = a*q;
 % second recursion
@@ -143,7 +153,7 @@ for k = 1:M
 end
 end
 
-function [ft,gt,Ht,lambda,lsiter] = wWolfeLS(fh,x0,f0,g0,s0)
+function [ft,gt,Ht,opt,lambda,lsiter] = wWolfeLS(fh,x0,f0,g0,s0,lambda)
 % Simple Wolfe linesearch, adapted from
 % (http://cs.nyu.edu/overton/mstheses/skajaa/msthesis.pdf, algorihtm 3).
 %
@@ -155,7 +165,7 @@ c2 = 0.9;
 done = 0;
 mu = 0;
 nu = inf;
-lambda = .5;
+lambda = .5*lambda;
 while ~done
     if nu < inf
         lambda = (nu + mu)/2;
@@ -164,7 +174,7 @@ while ~done
     end
     
     if lsiter < 10
-        [ft,gt,Ht] = fh(x0 + lambda*s0);
+        [ft,gt,Ht,opt] = fh(x0 + lambda*s0);
         lsiter = lsiter + 1;
     else
         lambda = 0;

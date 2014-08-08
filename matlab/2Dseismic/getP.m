@@ -21,3 +21,5 @@ P  = kron(I2(ismember(x,xt{1}),:),I1(ismember(z,zt{1}),:));
 for k = 2:length(zt)
     P  = [P;kron(I2(ismember(x,xt{k}),:),I1(ismember(z,zt{k}),:))];
 end
+
+P = P/sqrt(prod(h));
