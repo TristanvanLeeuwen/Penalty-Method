@@ -38,11 +38,11 @@ geophysics \cite{Haber2004,Epanomeritakis08}, medical imaging \cite{Abdoulaev200
 For linear PDEs, the resulting optimzation problem (after discretization) can be written as
 \bq
 \label{eq:constr}
-\min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 \quad 
+\min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 \quad 
 \mbox{s.t.} \quad A(\mathbf{m})\mathbf{u} = \mathbf{q},
 \eq
 where $\mathbf{m}$ is the (gridded) parameter of interest, $\mathbf{u}$ is the field and $\mathbf{d}$ are
-the input data. The matrix $P$ restricts the predicted field to the measurement locations. 
+the input data. The measurement process is modelled by taking inner products of the field with the columns of $P$. 
 The matrix $A(\mathbf{m})\mathbf{u} = \mathbf{q}$ represents the discretized PDE and $\mbf{q}$ is the 
 source function. 
 
@@ -55,10 +55,10 @@ while $\mbf{u}$ may easily represent $\mcl{O}(10^{17})$.
 A popular approach to solving
 these constrained problems is based on the corresponding Lagrangian:
 \bq
-\mcl{L}(\mbf{m},\mbf{u},\mbf{v})=  \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 
-+ \mbf{v}^*\left(A(\mathbf{m})\mathbf{u} - \mathbf{q}\right),
+\mcl{L}(\mbf{m},\mbf{u},\mbf{v})=  \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 
++ \mbf{v}^T\left(A(\mathbf{m})\mathbf{u} - \mathbf{q}\right),
 \eq
-where $^*$ denotes the complex-conjugate transpose.
+where $^T$ denotes the (complex-conjugate) transpose.
 A necessary condition for a solution to the constrained problem (\ref{eq:constr}) is that 
 it is a stationary point of the Lagrangian. 
 Such a stationary point may be found using a Newton-like method by repeatedly solving
@@ -66,8 +66,8 @@ the KKT system \cite{Haber2000}
 \bq
 \left(
 \begin{array}{ccc}
-R&K^*&G^*\\
-K&P^*P&A^*\\
+R&K^T&G^T\\
+K&PP^T&A^T\\
 G&A&\\
 \end{array}
 \right)
@@ -88,15 +88,15 @@ G&A&\\
 \eq
 where
 \bq
-\mcl{L}_{\mbf{m}} &=& G(\mbf{m},\mbf{u})^*\mathbf{v},\\
-\mcl{L}_{\mbf{u}} &=& A(\mathbf{m})^*\mathbf{v} + P^*(P\mathbf{u} - \mathbf{d}),\\
+\mcl{L}_{\mbf{m}} &=& G(\mbf{m},\mbf{u})^T\mathbf{v},\\
+\mcl{L}_{\mbf{u}} &=& A(\mathbf{m})^T\mathbf{v} + P(P^T\mathbf{u} - \mathbf{d}),\\
 \mcl{L}_{\mbf{v}} &=& A(\mathbf{m})\mathbf{u} - \mathbf{q},\\
 \eq
 and
 \bq
 G(\mbf{m},\mbf{u}) &=& \frac{\partial A(\mbf{m})\mbf{u}}{\partial \mbf{m}},\\
-K(\mbf{m},\mbf{v}) &=& \frac{\partial A(\mbf{m})^*\mbf{v}}{\partial \mbf{m}},\\
-R(\mbf{m},\mbf{u},\mbf{v}) &=& \frac{\partial G(\mbf{m},\mbf{u})^*\mbf{v}}{\partial \mbf{m}}.
+K(\mbf{m},\mbf{v}) &=& \frac{\partial A(\mbf{m})^T\mbf{v}}{\partial \mbf{m}},\\
+R(\mbf{m},\mbf{u},\mbf{v}) &=& \frac{\partial G(\mbf{m},\mbf{u})^T\mbf{v}}{\partial \mbf{m}}.
 \eq
 These Jacobian matrices are typically sparse and can be computed analytically.
 
@@ -108,32 +108,43 @@ for large-scale applications we have in mind because it involves simultaneously 
 \subsection{Reduced approach}
 For large-scale applications, one usually considers a \emph{reduced} problem
 \bq
-\min_{\mbf{m}}\phi(\mbf{m}) = \ts{\frac{1}{2}}||P\overline{\mbf{u}}(\mbf{m}) - \mbf{d}||_2^2,
+\min_{\mbf{m}}\phi(\mbf{m}) = \ts{\frac{1}{2}}||P^T\mbf{u}(\mbf{m}) - \mbf{d}||_2^2,
 \label{eq:redL}
 \eq
-where $\overline{\mbf{u}}(\mbf{m}) = A(\mathbf{m})^{-1}\mathbf{q}$.
+where $\mbf{u}(\mbf{m}) = A(\mathbf{m})^{-1}\mathbf{q}$.
 The resulting optimization problem has a much smaller dimension and can be solved using black-box 
 non-linear optimization methods. The gradient and the (Gauss-Newton) Hessian of 
 $\phi$ are given by
 
 \bq
-\nabla\phi(\mbf{m}) &=& G(\mbf{m},\overline{\mbf{u}})^*\overline{\mbf{v}},\\
-\nabla^2\phi(\mbf{m}) &=& G(\mbf{m},\overline{\mbf{u}})^*A(\mbf{m})^{-*}P^*PA(\mbf{m})^{-1}G(\mbf{m},\overline{\mbf{u}})\nonumber\\
-&& + K(\mbf{m},\overline{\mbf{v}})^*A(\mbf{m})^{-*}G(\mbf{m},\overline{\mbf{u}}) + G(\mbf{m},\overline{\mbf{u}})^*A(\mbf{m})^{-*}K(\mbf{m},\overline{\mbf{v}})\nonumber\\
-&& + R(\mbf{m},\overline{\mbf{u}},\overline{\mbf{v}}).
+\nabla\phi(\mbf{m}) &=& G(\mbf{m},\mbf{u})^T\mbf{v},\\
+\nabla^2\phi(\mbf{m}) &=& G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}PP^TA(\mbf{m})^{-1}G(\mbf{m},\mbf{u})\nonumber\\
+&& + K(\mbf{m},\mbf{v})^TA(\mbf{m})^{-T}G(\mbf{m},\mbf{u}) + G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}K(\mbf{m},\mbf{v})\nonumber\\
+&& + R(\mbf{m},\mbf{u},\mbf{v}).
 \eq
-where $\overline{\mbf{v}} = A(\mbf{m})^{-*}P^*\left(\mbf{d} - P\overline{\mbf{u}}\right)$.
+where $\mbf{v} = A(\mbf{m})^{-T}P\left(\mbf{d} - P^T\mbf{u}\right)$.
 
-The basic algorithm for minimizing $\phi(\mathbf{m})$ is
-\bq
-\mathbf{u}^k  &=& A(\mathbf{m}^{k})^{-1}\mathbf{q}\\
-\mathbf{v}^k  &=& A(\mathbf{m}^k)^{-*}P^*(\mathbf{d} - P\mathbf{u}),\\
-\mathbf{m}^{k+1} &=& \mathbf{m}^k - \alpha^k G(\mathbf{m}^k,\mathbf{u}^k)^*\mathbf{v}^k,
-\eq
-where $\alpha^k$ is an appropriately chosen steplength.
+The basic (Gauss-Newton) algorithm for minimizing $\phi(\mathbf{m})$ is given in 
+Algorithm \ref{alg:reduced}.
+\begin{algorithm}
+\caption{Basic Gauss-Newton algorithm for find a stationary point of the Lagrangian via the reduced method}
+\label{alg:reduced}
+\begin{algorithmic}
+\REQUIRE{initial guess $\mbf{m}^0$, tolerance $\epsilon$}
+\STATE{$k=0$}
+\REPEAT
+\STATE{$\mathbf{u}^k_{\mathrm{red}}  = A(\mathbf{m}^k)^{-1}\mathbf{q}$}
+\STATE{$\mathbf{v}^k_{\mathrm{red}}  = A(\mathbf{m}^k)^{-T}P(\mathbf{d} - P^T\mathbf{u}^k_{\mathrm{red}})$}
+\STATE{$\mathbf{g}^k_{\mathrm{red}}    = G(\mathbf{m}^k,\mathbf{u}^k_{\mathrm{red}})^T\mathbf{v}^k_{\mathrm{red}}$}
+\STATE{$H^k_{\mathrm{red}} = G(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}})^TA(\mbf{m}^k)^{-T}PP^TA(\mbf{m}^k)^{-1}G(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}})$}
+\STATE{$\mathbf{m}^{k+1} =\mathbf{m}^k - \alpha^k \left(H_{\mathrm{red}}^{k}\right)^{-1}\mathbf{g}^k_{\mathrm{red}}$}
+\UNTIL{$\|\mbf{g}_{\mathrm{red}} ^k\|_2 \leq \epsilon$}
+\end{algorithmic}
+\end{algorithm}
 Note that this corresponds to a block-elimination of the KKT system and the iterates automatically
-satisfy $\mcl{L}_{\mathbf{u}}(\mbf{m}^k,\mbf{u}^k,\mbf{v}^k) = \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}^k,\mbf{v}^k) = 0$. 
-At a stationary point $\mbf{m}^k$ of $\phi$ we also satisfy $\mcl{L}_{\mathbf{m}}({\mbf{m}}^k,{\mbf{u}}^k,{\mbf{v}}^k) = 0$.
+satisfy $\mcl{L}_{\mathbf{u}}(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}},\mbf{v}^k_{\mathrm{red}}) = \mcl{L}_{\mathbf{v}}(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}},\mbf{v}^k_{\mathrm{red}}) = 0$. 
+If the algorithm terminates successfully, the final iterates additionally satisfy
+$\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_2^2 \leq \epsilon$.
 
 The disadvantage of this approach is that it
 requires the solution of the PDEs at each update, making it computationally very expensive. 
@@ -161,9 +172,9 @@ that it effectively eliminates these variables from the optizatiom problem and t
 of the optimization problem. Due to the special structure of the problems under consideration, this elimination 
 can be done efficiently, leading to a tractable algorith for large-scale problems. 
 Contrary to the conventional \emph{reduced} approach, the resulting algorihtm does \emph{not} enforce the constraint
-$c(m,u)$ at each iteration and arguably leads to a less non-linear problem in $m$. It is outside the scope of the current
-paper to give a rigorous prove of this statement, but a case-study on a simple toy problem presented in section
- \ref{toy} gives an intuitive justification.
+at each iteration and arguably leads to a less non-linear problem in $\mbf{m}$. It is outside the scope of the current
+paper to give a rigorous prove of this statement, but a case-study presented in section
+ \ref{examples} provides some numerical evidence.
 
 A detailed description of the proposed algorihtm is given in section \ref{algorithm}.
 Here, we also compare the penalty approach to both the all-at-once and the
@@ -181,7 +192,7 @@ The proposed method is related to the \emph{equation-error} approach,
 which is typically used to identify the control variable in diffusion
 problems given a \emph{complete} measurement of the state: $\mbf{d} = \mbf{u}$ by
 solving $A(\mbf{m})\mbf{u} = \mbf{q}$ for $\mbf{m}$ \cite{Richter1981,Banerjee2013}. 
-Given \emph{partial} measurements of the state $\mbf{d} = P\mbf{u}$, the proposed method can be seen as a
+Given \emph{partial} measurements of the state $\mbf{d} = P^T\mbf{u}$, the proposed method can be seen as a
 way of bootstrapping this by first attempting to reconstruct the complete
 state from the partial measurements. 
 
@@ -191,7 +202,7 @@ A constrained optimization problems of the form (\ref{eq:constr})
 can be recast as an unconstrained problem by introducing a positive penalty function $\pi$ as follows
 \bq
 \label{eq:penalty}
-\min_{\mbf{m},\mbf{u}} \Phi_{\lambda} = \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \lambda\pi(\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}).
+\min_{\mbf{m},\mbf{u}} \Phi_{\lambda} = \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 + \lambda\pi(\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}).
 \eq
 The idea is that any departure from the constraint is penalized so that the solution of this 
 unconstrained problem will coincide with that of the constrained problem when $\lambda$ is large enough.
@@ -215,13 +226,13 @@ not become arbritarily large and this this avoids the ill-conditioning problems 
 is that the resulting unconstrained problem is no longer differentiable. 
 With large-scale applications in mind, we do not consider exact penalty methods any further in this paper.
 
-\section{Variational projection}
+\section{A reduced penalty method}
 \label{varpro}
 Using a quadratic penalty function, the constrained problem (\ref{eq:constr}) is reformulated as
 
 \bq
 \label{eq:penalty}
-\min_{\mbf{m},\mbf{u}} \mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
+\min_{\mbf{m},\mbf{u}} \mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
 \eq
 The gradient and Hessian are given by
 \bq
@@ -232,8 +243,8 @@ The gradient and Hessian are given by
 \right)
 = 
 \left(\begin{array}{c}
-\lambda G(\mbf{m},\mbf{u})^*\left(A(\mbf{m})\mbf{u} - \mbf{q}\right)\\
-P^*(P\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^*(A(\mbf{m})\mbf{u} - \mbf{d})\\
+\lambda G(\mbf{m},\mbf{u})^T\left(A(\mbf{m})\mbf{u} - \mbf{q}\right)\\
+P(P^T\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^T(A(\mbf{m})\mbf{u} - \mbf{d})\\
 \end{array}
 \right),
 \eq
@@ -249,17 +260,17 @@ and
 \eq
 where
 \bq
-\mcl{P}_{\mbf{m},\mbf{m}} &=& \lambda (G(\mbf{m},\mbf{u})^*G(\mbf{m},\mbf{u}) + R(\mbf{m},\mbf{u},A(\mbf{m})\mbf{u}-\mbf{q})),\\
-\mcl{P}_{\mbf{u},\mbf{u}} &=&P^*P + \lambda A(\mbf{m})^*A(\mbf{m}),\\
-\mcl{P}_{\mbf{m},\mbf{u}} &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}) + A(\mbf{m})^*G(\mbf{m},\mbf{u})).\\
+\mcl{P}_{\mbf{m},\mbf{m}} &=& \lambda (G(\mbf{m},\mbf{u})^TG(\mbf{m},\mbf{u}) + R(\mbf{m},\mbf{u},A(\mbf{m})\mbf{u}-\mbf{q})),\\
+\mcl{P}_{\mbf{u},\mbf{u}} &=&PP^T + \lambda A(\mbf{m})^TA(\mbf{m}),\\
+\mcl{P}_{\mbf{m},\mbf{u}} &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}) + A(\mbf{m})^TG(\mbf{m},\mbf{u})).\\
 \eq
 Of course, optimization in the full $(\mbf{m},\mbf{u})$-space is not feasible for large-scale problems, so we 
 eliminate $\mbf{u}$ using a \emph{variational projection} approach \cite{Aravkin2012c} to define a reduced problem:
 \bq
 \label{eq:redpenalty}
-\min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \mcl{P}(\mbf{m},\overline{\mbf{u}}_{\lambda}(\mbf{m})),
+\min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \mcl{P}(\mbf{m},\mbf{u}_{\lambda}(\mbf{m})),
 \eq
-where $\overline{\mbf{u}}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \mcl{P}(\mbf{m},\mbf{u})$.
+where $\mbf{u}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \mcl{P}(\mbf{m},\mbf{u})$.
 It is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are given by 
 \bq
 \label{eq:gradpen}
@@ -270,87 +281,108 @@ It is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are giv
 \eq
 Note that $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\mcl{P}$.
 
-The optimization problem for $\overline{\mbf{u}}_{\lambda}$ has a closed-form solution and 
-the basic algorithm for minimizing $\phi_{\lambda}$ is
-\bq
-\mathbf{u}^k_{\lambda}  &=& \left(P^*P + \lambda A^*A \right)^{-1}\left(P^*\mbf{d} + \lambda A^*\mbf{q}\right)\\
-\mathbf{v}^k_{\lambda}  &=& \lambda(A(\mathbf{m}^k)\mathbf{u}^k - \mathbf{q}),\\
-\mathbf{m}^{k+1} &=& \mathbf{m}^k - \alpha^k G(\mathbf{m}^k,\mathbf{u}_{\lambda}^k)^*\mathbf{v}^k_{\lambda},
-\eq
-where $\alpha^k$ is an appropriately chosen steplength. 
-Next, we show that this basic algorithm finds an approximate stationary point of the Lagrangian.
-%\begin{theorem}
-%A local minimizer $\overline{\mbf{m}}_{\lambda}$ of $\phi_{\lambda}$ together with the corresponding $\overline{\mbf{u}}_{\lambda} = \argmin_{\mbf{u}} \Phi_{\lambda}(\overline{\mbf{m}},\mbf{u})$,
-%are also a minimizer of $\Phi_{\lambda}$ and vice versa.
-%\end{theorem}
-%\begin{proof}
-%Since $\overline{\mbf{u}}_{\lambda}$ is assumed to be a local minimizer of $\Phi_{\lambda}(\mbf{m},\cdot)$, it satisfies 
-%the following optimality conditions:
-%\[
-%\nabla_{\mbf{u}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) = 0,
-%\]
-%and
-%\[
-%\nabla^2_{\mbf{u}}\Phi_{\lambda}(\mbf{m},\overline{\mbf{u}}_{\lambda}) \succ 0.
-%\]
-%Likewise, since $\overline{\mbf{m}}_{\lambda}$ is a local minimizer of $\phi_{\lambda}$, it satisfies
-%\[
-%\nabla_{\mbf{m}}\phi_{\lambda}(\overline{\mbf{m}}_{\lambda}) = 0,
-%\]
-%and
-%\[
-%\nabla^2_{\mbf{m}}\phi_{\lambda}(\overline{\mbf{m}}_{\lambda}) \succ 0.
-%\]
-%We have to show that the pair $(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})$ satisfy the first and second order
-%optimilaty conditions of $\Phi_{\lambda}$. From the expression for the gradient of $\phi_{\lambda}$ (\ref{eq:gradpen}) it follows immediately
-%that $\nabla\phi_{\lambda} = 0 \iff \nabla\Phi_{\lambda} = 0$.
-%Since $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\Phi_{\lambda}$ it follows
-%that $\nabla^2\phi \succ 0, \nabla^2_{\mbf{u}}\Phi \succ 0 \iff \nabla^2\Phi_{\lambda} \succ 0$ (cf. \cite[prop. 14.1]{Saad}).\qed
-%\end{proof}
+The optimization problem for $\mbf{u}_{\lambda}$ has a closed-form solution and 
+the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algorithm \ref{alg:penalty}.
 
-\begin{theorem}
-A stationary point, $\overline{\mbf{m}}_{\lambda}$ of $\phi_{\lambda}$ 
-along with the corresponding $\overline{\mbf{u}}_{\lambda}$ and $\overline{\mbf{v}}_{\lambda}$ satisfies 
-$\mcl{L}_{\mbf{u}} = \mcl{O}(\lambda^{-1})$ and $\mcl{L}_{\mbf{v}} = \mcl{L}_{\mbf{m}} = 0$.
-\end{theorem}
+\begin{algorithm}
+\caption{Basic Gauss-Newton algorithm for find a stationary point of the Lagrangian via the penalty method}
+\label{alg:penalty}
+\begin{algorithmic}
+\REQUIRE{initial guess $\mbf{m}^0$, penalty parameter $\lambda$, tolerance $\epsilon$}
+\STATE{$k=0$}
+\REPEAT
+\STATE{$\mathbf{u}^k_{\lambda}  = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A^*\mbf{q} + \lambda^{-1}P^*\mbf{d}\right)$}
+\STATE{$\mathbf{v}^k_{\lambda}  = \lambda(A(\mathbf{m}^k)\mathbf{u}^k_{\lambda} - \mathbf{q})$}
+\STATE{$\mathbf{g}^k_{\lambda}  = G(\mathbf{m}^k,\mathbf{u}^k_{\lambda})^*\mathbf{v}^k_{\lambda}$}
+\STATE{$H^k_{\lambda}           = \lambda G^T\left(I - A\left(A^TA + \lambda^{-1}PP^T\right)^{-1}A^T \right)G$}
+\STATE{$\mathbf{m}^{k+1}        = \mathbf{m}^k - \alpha^k \left(H_{\lambda}^{k}\right)^{-1}\mathbf{g}^k_{\lambda}$}
+\UNTIL{$\|\mbf{g}_{\lambda}^k\|_2 \leq \epsilon$}
+\end{algorithmic}
+\end{algorithm}
+
+Note that the modified system $A^*A + \lambda^{-1}PP^T$ is a low-rank update of the original PDE and
+incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); 
+the estimate of the field is not only based on the physics and the current model, but also on the data.
+
+Next, we show how the states generated by this algorithm $\mathbf{u}^k_{\lambda}$ and $\mathbf{v}^k_{\lambda}$ 
+relate to the states generated by the reduced approach and subsequently if the algorithm successfully terminates
+the iterates satisfy $\|\nabla\mcl{L}\|_2^2 \leq \epsilon + \mcl{O}(\lambda^{-1})$.
+
+\begin{lemma}
+For a fixed $\mbf{m}$, the states $\mathbf{u}_{\lambda}$ and $\mathbf{v}_{\lambda}$ used 
+in the reduced penalty approach (cf. Algorithm \ref{alg:penalty}) are related to the states $\mathbf{u}_{\mathrm{red}}$ and 
+$\mathbf{v}_{\mathrm{red}}$ used in the reduced approach  (cf. Algorithm \ref{alg:reduced})
+as follows
+\bq
+\mathbf{u}_{\lambda} = \mathbf{u}_{\mathrm{red}} + \mcl{O}(\lambda^{-1}),\\
+\mathbf{v}_{\lambda} = \mathbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-1}).
+\eq
+\end{lemma}
 \begin{proof}
-The stationary point $\overline{\mbf{m}}_{\lambda}$ satisfies $G(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})^*\overline{\mbf{v}}_{\lambda} = 0$.
-The corresponding state variables are given by
+The state variables used in the penalty approach are given by
 \[
-\overline{\mbf{u}}_{\lambda} = \left(P^*P + \lambda A^*A \right)^{-1}\left(P^*\mbf{d} + \lambda A^*\mbf{q}\right),
+\mbf{u}_{\lambda} = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right),
 \]
 and
 \[
-\overline{\mbf{v}}_{\lambda} = \lambda(A(\overline{\mbf{m}}_{\lambda})\overline{\mbf{u}}_{\lambda} - \mathbf{q}).
+\mbf{v}_{\lambda} = \lambda(A\mbf{u}_{\lambda} - \mathbf{q}).
 \]
-The estimated state can be re-written as
+The former can be re-written as
 \[
-\overline{\mbf{u}}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-*}P^*PA^{-1}\right)^{-1}\left(\lambda^{-1}A^{-*}P^*\mbf{d} + \mbf{q}\right).
+\mbf{u}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-T}PP^TA^{-1}\right)^{-1}\left(\mbf{q} + \lambda^{-1}A^{-T}P\mbf{d}\right).
 \]
-For $\lambda > \sigma_{\max}(PA^{-1})$, we expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$
+For $\lambda > \sigma_{\max}(P^TA^{-1})$, we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$
 and find that
 \bq
-\overline{\mbf{u}}_{\lambda} &=& A(\mbf{m})^{-1}\mbf{q}\nonumber\\
-&&+ \lambda^{-1}\left(A^{*}A\right)^{-1}P^*\left(\mbf{d} - PA^{-1}\mbf{q}\right)\nonumber\\
-&&- \lambda^{-2}\left(A^{*}A\right)^{-1}P^*P\left(A^{*}A\right)^{-1}P^*\mbf{d} + \mcl{O}(\lambda^{-3}).
+\mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
+&&+ \lambda^{-1}\left(A^{T}A\right)^{-1}P\left(\mbf{d} - P^TA^{-1}\mbf{q}\right)\nonumber\\
+&&- \lambda^{-2}\left(A^{T}A\right)^{-1}PP^T\left(A^{T}A\right)^{-1}P\mbf{d} + \mcl{O}(\lambda^{-3})\nonumber\\
+&=& \mbf{u}_{\mathrm{red}} + \lambda^{-1}A\mbf{v}_{\mathrm{red}} + \lambda^{-2}.
 \eq
-If we substitute this in the expression for the gradient of the Lagrangian we find
+We immediately find
 \bq
-\mcl{L}_{\mathbf{m}}(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda},\overline{\mbf{v}}_{\lambda}) &=& G(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda})^*\overline{\mbf{v}}_{\lambda} = 0,
+\mbf{v}_{\lambda} = \mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-1}).
 \eq
-and
+\end{proof}
+
+
+\begin{theorem}
+At each iteration of algorithm \ref{alg:reduced}, the iterates satisfy 
+$\mcl{L}_{\mbf{u}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda}) = \mcl{O}(\lambda^{-1})$ and 
+$\mcl{L}_{\mbf{v}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda}) = 0$
+Moreover, if algorithm \ref{alg:reduced} successfully terminates with $\mbf{m}^*$
+for which $\|\mbf{g}_{\lambda}^*\|_2 \leq \epsilon$
+we have $\|\mcl{L}_{\mbf{m}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon3$.
+\end{theorem}
+\begin{proof}
+Using the definitions of $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ we find
+for any $\mbf{m}_{\lambda}$
 \bq
-\mcl{L}_{\mathbf{u}}(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda},\overline{\mbf{v}}_{\lambda}) &=& A(\overline{\mbf{m}}_{\lambda})^*\overline{\mbf{v}}_{\lambda} + P^*(P\overline{\mbf{u}}_{\lambda} - \mbf{d})\nonumber\\
-&=& \lambda A^*(A\overline{\mbf{u}}_{\lambda} - \mbf{q}) + P^*(P\overline{\mbf{u}}_{\lambda} - \mbf{d}) = 0,
+\mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P(P^T\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
+&=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P(P^T\mbf{u}_{\lambda} - \mbf{d}) = 0.
 \eq
-and finally,
+Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\sigma_{\max}(P^TA)$ presented in Lemma , we find
 \bq
-\mcl{L}_{\mathbf{v}}(\overline{\mbf{m}}_{\lambda},\overline{\mbf{u}}_{\lambda},\overline{\mbf{v}}_{\lambda}) &=& A(\overline{\mbf{m}}_{\lambda})\overline{\mbf{u}}_{\lambda} - \mbf{q}\nonumber\\
-&=& \lambda^{-1}A(\overline{\mbf{m}}_{\lambda})^{-*}P^*\left(\mbf{d} - PA(\overline{\mbf{m}}_{\lambda})^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-2}).
+\mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\nonumber\\
+&=& \lambda^{-1}A(\mbf{m})^{-T}P\left(\mbf{d} - P^TA(\mbf{m})^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-2}).
 \eq
-We find that 
+At a stationary point $\mbf{m}^*$, $\|\mbf{d} - P^TA(\mbf{m}^*)^{-1}\mbf{q}\|_2$ can be interpreted as the noise level.
+Thus we find
 \bq
-\|\mcl{L}_{\mbf{v}}\|_2^2 \leq \|\mbf{d} - PA(\overline{\mbf{m}}_{\lambda})^{-1}\mbf{q}\|_2^2 + \mcl{O}(\lambda^{-2}).
+\|\mcl{L}_{\mathbf{v}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \lambda^{-1}\mu\sigma,
+\eq
+where $\sigma$ is the noise level and $\mu$ is the largest singular value of $P^TA(\mbf{m}^*)^{-1}$.
+
+At a point $\mbf{m}^*$ for which 
+$\|\nabla\phi_{\lambda}(\mbf{m}^*)\|_2 \leq \epsilon$
+we immediately find that
+\bq
+\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2^2 \leq \epsilon.
+\eq
+
+Finally, we find that 
+\bq
+\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2\leq \sqrt{\epsilon^2 + \lambda^{-2}\mu^2\sigma^2}.e
 \eq
 \qed
 \end{proof}
@@ -380,99 +412,170 @@ We find that
 %Figure \ref{fig:opt} (c) shows the reduced objective (\ref{eq:redL}) and (d) shows the penalty objective (\ref{eq:redP}). The reduced objective in this case is quite non-linear while the penalty objective is quadratic.
 %These plots illustrate that the penalty formulation can indeed lead to an objective function that is much better behaved.
 
-\section{Algorihtms}
+\section{Algorithms}
 \label{algorithm}
-In this section we develop a pratical algorithm for the minimization of $\phi_{\lambda}$ based 
-on the ideas discussed in section \ref{varpro}. We slightly elaborate the notation by explicitly revealing the multi-experiment structure of the problem;
-The matrix $A$ is a block-diagonal matrix with blocks $A_i(\mbf{m})$ for $i=1\ldots M$, $\mbf{u} = [\mbf{u}_1; \ldots; \mbf{u}_{M}]$, etc.
-Of course, $\mbf{m}$ does not depend on the experiment index.
+In this section we discuss some practicalities of the implementation of algorithm \ref{alg:penalty}. 
+We slightly elaborate the notation to explicitly 
+reveal the multi-experiment structure of the problem. In this case, the data are acquired in a series
+of $M$ independent experiments and $\mbf{d} = [\mbf{d}_1; \ldots; \mbf{d}_{M}]$ is a block-vector. We 
+partition the states and sources in a simular manner and, since the experiments are independent, 
+system matrix $A$ is block-diagonal matrix with blocks $A_i(\mbf{m})$. The matrix $P$ has rank $L$.
 
-The basic structure of
+\subsection{Solving the augmented PDE}
+Due to the block structure of the problem, the linear systems can be solved independently.
+We assume for the moment that the state vector for a single experiment can be held in memory.
 
-
-\subsection{Computing the gradient and Hessian}
-Evaluation of $\phi_{\lambda}$ and its derivatives requires the minimization of $\mcl{P}$ w.r.t. $\mbf{u}$. 
-Because of the block-structure of the problem and the linearity in $\mbf{u}$ this can be achieved by solving the 
-following (inconsistent) overdetermined system for each $i$
-
+We can obtain the states by solving the following inconsistent overdetermined system
 \bq
 \label{eq:u_pen}
 \left(
 \begin{array}{c}
-\sqrt{\lambda} A_i(\mbf{m})\\
-P
+A_i(\mbf{m})\\
+\lambda^{-1/2}P
 \end{array}
 \right)
 \mbf{u}_{i} \approx
 \left(
 \begin{array}{c}
-\sqrt{\lambda} \mbf{q}_{i}\\
-\mbf{d}_{i}
+\mbf{q}_{i}\\
+\lambda^{-1/2}\mbf{d}_{i}
 \end{array}
 \right),
 \eq
-in a least-squares sense.
-Since both $A_i$ and $P$ are sparse, we can efficiently solve this via direct (QR-) factorization or using an iterative method like LSQR or LSMR \cite{Paige1982,Fong2011}.
-Given these solutions $\{\mbf{u}_i\}$, the gradient and Gauss-Newton Hessian of $\phi_{\lambda}$ are given by (cf eq. \ref{eq:gradpen}-\ref{eq:hesspen})
+in a least-squares sense. If both $A_i$ and $P$ are sparse, we can efficiently solve 
+this via a QR factorization or via a Cholesky factorization of the corresponding Normal equations.
+For simple measurements, $PP^T$ is a diagonal matrix with ones and zeros and thus the augmented system
+$A^TA + \lambda^{-1}PP^T$ has the same sparsity pattern as the original system. 
 
+While we can make use of factorization techniques for
+small-scale applications, industry-scale applications will typically
+require (preconditioned) iterative solution of such systems. This allows
+for on-the-fly generation of the system-matrix, but still requires
+the state vector to fit in memory.
+It seems most attractive
+to work on the overdetermined system directly, rather than form the Normal equations.
+Obvious candidates are LSQR or LSMR \cite{Paige1982,Fong2011}.
+Another promising
+candidate is a generic accelerated row-projected method described by
+\cite{Bjorck1979,Gordon2013} which proved successful in seismic
+applications and can be easily extended to deal with overdetermined
+systems \cite{Censor1983}. 
+
+The augmented system $A^TA + \lambda^{-1} PP^*$ is a rank $L$ modification of the 
+original system $A^TA$. It follows from \cite[Thm 8.1.8]{Golub1996} that the eigenvalues are related as
+\[
+\mu_n(A^TA + \lambda^{-1} PP^T) = \mu_n(A^TA) + a_n \lambda^{-1},
+\]
+where $\mu_n(B)$ denotes the $n$-th eigenvalue of $B$ and $\sum_n a_n = L$. 
+
+
+When the state vector does not fit in memory, it is not so obvious how the overdetermined system should
+be solved. An example is explicit time-stepping, where the system matrix exhibits a lower-triangular block-structure.
+
+\subsection{Gradient and Hessian}
+Given these solutions $\mbf{u}_i$, the gradient, $\mbf{g}_{\lambda}$ and Gauss-Newton Hessian $H_{\lambda}$ of $\phi_{\lambda}$ 
+are given by (cf eq. \ref{eq:gradpen}-\ref{eq:hesspen})
 \bq
-\nabla{\phi}_{\lambda} &=& \sum_{i}\lambda G_{i}^*\left(A_i\overline{\mathbf{u}}_{i} - \mathbf{q}_{i}\right),\\
-\nabla^2{\phi}_{\lambda} &=& \sum_{i}\lambda G_{i}^*G_{i} - \lambda^2G_{i}^*A_i\left(P^*P + \lambda A_i^*A_i \right)^{-1}A_i^*G_{i}\nonumber\\
-&=&\lambda\sum_{i}G_{i}^*G_{i} - G_{i}^*\left(I + \lambda^{-1}A_i^{-*}P^*PA_i^{-1} \right)^{-1}G_{i},
+\mbf{g}_{\lambda} &=& \lambda\sum_{i=1}^M G_i^T\left(A_i\mathbf{u}_{i} - \mathbf{q}_{i}\right),\\
+H_{\lambda} &=& \lambda\sum_{i=1}^M G_i^T\left(I - A_i\left(A_i^TA_i + \lambda^{-1}PP^T\right)^{-1}A_i^T \right)G_i,
 \eq
-where $G_{i} = \frac{\partial A_i(\mbf{m})\overline{\mbf{u}}_{i}}{\partial \mbf{m}}$, which is typically a sparse diagonally dominant matrix.
-
-\subsection{Contination of $\lambda$}
-
+where $G_i = G(\mbf{m},\mbf{u}_i)$. We can compute the inverse of $\left(A_i^TA_i + \lambda^{-1}PP^T\right)$
+in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the 
+gradient on the fly. The Hessian is never formed explicitly, but its action is computed as required.
+ 
 \subsection{Complexity estimates}
-Assuming we can solve equations (\ref{eq:u_pen}) and (\ref{eq:u_red})
-equally efficient, the penalty-based method requires a factor of 2 less
-computation and storage. Note, however, that for the penalty-based
-formulation we get an (approximate) Newton method while the reduced
-method only uses a Quasi-Newton approach. A Gauss-Newton method for the
-reduced approach would require far more PDE-solves and is not considered
-here. A summary of the leading order computational costs of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}.
+Assuming we can solve the overdetermined system (\ref{eq:u_pen}) as efficiently as
+the original PDE, the evaluation of the gradient requires a factor of 2 less
+computation and storage as the gradient in the reduced approach. 
+A summary of the leading order computational costs of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}.
 
-\section{Numerical experiments}
+\section{Case studies}
 \label{examples}
-For the examples, we discretize the 2D Helmholtz operator using a
-5-point finite-difference stencil with absorbing boundary conditions.
-The Quasi-Netwon algorithm \ref{QN2} is augmented with a simple
-back-tracking linesearch to ensure descent.
+The following experiments are done in Matlab, using \texttt{slash} to solve the PDEs. We consider both
+a Gauss-Newton (GN) and a Quasi-Newton (QN) variant of the algorithms and use a weak Wolfe linesearch
+to determine the steplength. In the GN method the Hessian is inverted using 
+conjugate gradients (\texttt{pcg}) up to a relative tolerance of $\eta$. The matrix-vector products are computed on the fly.
+For the QN method we use the L-BFGS inverse Hessian with a history size of $K$. Finally, we add a regularization term
+$\frac{\alpha}{2} \|D\mbf{m}\|_2^2$, where $D$ is the first-order finite-difference matrix,  to both the reduced and penalty approaches. 
+We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}.
 
+The code used to perform the experiments is available from \url{github}.
+
+\subsection{1D DC resistivity}
+\bq
+\partial_t u = \partial_x(m\partial_x u).
+\eq
+A discretization in the temporal Fourier domain gives
+\bq
+A(\mbf{m}) = \imath\omega I + D^T\mathsf{diag}(\mbf{m})D,
+\eq
+where $\omega$ is the angular frequency and $D$ is the first-order finite-difference matrix. 
+We take measurements as follows
+\bq
+\mbf{d} = \mbf{p}^TA(\mbf{m})^{-1}\mbf{q}.
+\eq
+The Jacobian is given by $G(\mbf{m},\mbf{u}) = D^T\mathsf{diag}(D\mbf{u})$. 
+
+%We investigate the sensitivity of $\mbf{d}$ w.r.t. a perturbation of a single parameter.
+%\bq
+%A(\mbf{m} + \delta \mbf{e}_i) = A(\mbf{m}) + \delta \mbf{s}_i\mbf{s}_i^T,
+%\eq
+%where $\mbf{s}_i$ is the $i$th column of $D$. Using the identity 
+%$(A + \mbf{b}\mbf{c}^T)^{-1} = A^{-1} + \frac{1}{1 + \mbf{c}^TA^{-1}\mbf{d}}A^{-1}\mbf{b}\mbf{c}^TA^{-1}$ we find
+%\bq
+%A(\mbf{m} + \delta \mbf{e}_i)^{-1} = A(\mbf{m})^{-1} + \frac{\delta}{1 + \delta\mbf{s}_i^TA(\mbf{m})^{-1}\mbf{s}_i}A(\mbf{m})^{-1}\mbf{s}_i\mbf{s}_i^TA(\mbf{m})^{-1}.
+%\eq
+%
+%For the reduced approach the objective function is given by 
+%\bq
+%\phi(\mbf{m}) = \left(\mbf{p}^T(A(\mbf{m})^{-1} - A(\mbf{m^*})^{-1})\mbf{q}\right)^2.
+%\eq
+%And we find
+%\bq
+%\phi(\mbf{m}^* + \delta\mbf{e}_i) = \frac{\delta^2}{(1 + \delta\mbf{s}_i^TA(\mbf{m}^*)^{-1}\mbf{s}_i)^2}\left(\mbf{p}^T(A(\mbf{m}^*)^{-1}\mbf{s}_i\mbf{s}_i^TA(\mbf{m}^*)^{-1})\mbf{q}\right)^2
+%\eq
+%For the penalty approach we have
+%\bq
+%\phi_{\lambda}(\mbf{m}) = \left(\mbf{p}^T(\mbf{u}_{\lambda} - A(\mbf{m^*})^{-1}\mbf{q})\right)^2 + \lambda\|A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\|^2
+%\eq
+
+\subsection{2D seismic waveform inversion}
+Consider the 2D scalar wave-equation
+\bq
+\left(m\partial_t^2 - \nabla^2\right)u = 0
+\eq
+with radiation boundary conditions $\sqrt{m}\partial_t - \partial_n u = 0$.
+Discretization in the temporal Fourier domain leads to
+\bq
+A(\mbf{m}) = \mathsf{diag}(\mbf{a})\mathsf{diag}(\mbf{m}) + D^TD,
+\eq
+where $a_i = \omega^2$ in the interior and $a_i = $ on the boundary.
+The Jacobian is given by
+\bq
+G(\mbf{m},\mbf{u}) = \mathsf{diag}(\mbf{a})\mathsf{diag}(\mbf{u}).
+\eq
 
 \section{Discussion}
 \label{discussion}
 This paper lays out the basics of an efficient implementation of the
 penalty method for PDE-constrained optimization. A few remaining issues
 and possible extensions are listed below.
-\begin{description}
-
-\item[Solving large, sparse, mildly overdetermined systems] 
-A key step in the penalty method is the solution of the augmented PDE
-(\ref{eq:u_pen}). While we can make use of factorization techniques for
-small-scale applications, industry-scale applications will typically
-require (preconditioned) iterative solution of such systems. A promising
-candidate is a generic accelerated row-projected method described by
-\cite{Bjorck1979,Gordon2013} which proved successful in seismic
-applications and can be easily extended to deal with overdetermined
-systems \cite{Censor1983}.
-
-\item[Time-domain formulation]
-We have described application of the penalty method to a formulation in
-the frequency domain, in which case we can hope to store a complete
-wavefield $\mathbf{u}_{kl}$ for one source and frequency. In a
-time-domain formulation, the PDE (after spatial discretization) can be
-written as
- \[
- M(\mathbf{m})\mbf{u}'(t) + S\mathbf{u}(t) = \mathbf{q}(t),
- \]
-which can be solved via some form of time-stepping. The augmented
-wave-equation involves an extra equation of the form $P\mathbf{u}(t) =
-\mbf{d}(t)$. While we can in principle form a large overdetermined system
-for the wavefield at all timesteps, this is not feasible and a suitable
-time-stepping strategy will have to be developed to solve the augmented
-PDE without storing the wavefields for all timesteps.
+%\begin{description}
+%\item[Time-domain formulation]
+%We have described application of the penalty method to a formulation in
+%the frequency domain, in which case we can hope to store a complete
+%wavefield $\mathbf{u}_{kl}$ for one source and frequency. In a
+%time-domain formulation, the PDE (after spatial discretization) can be
+%written as
+% \[
+% M(\mathbf{m})\mbf{u}'(t) + S\mathbf{u}(t) = \mathbf{q}(t),
+% \]
+%which can be solved via some form of time-stepping. The augmented
+%wave-equation involves an extra equation of the form $P\mathbf{u}(t) =
+%\mbf{d}(t)$. While we can in principle form a large overdetermined system
+%for the wavefield at all timesteps, this is not feasible and a suitable
+%time-stepping strategy will have to be developed to solve the augmented
+%PDE without storing the wavefields for all timesteps.
 
 %\item[Other PDE-constrained optimization problems]
 %The penalty formulation can be applied to any PDE-constrained
@@ -540,8 +643,7 @@ PDE without storing the wavefields for all timesteps.
 %penalty objective (\ref{eq:redpenalty}). Using the expressions for the gradient and Hessian presented in section 3.1, we can design other Newton variants. 
 %
 %Recently proposed stochastic algorithms aimed at dramatically reducing the cost of PDE-constrained optimization problems by working on a small subsets of the right-hand-sides \cite{Krebs09,Friedlander2012,Haber12,VanLeeuwen2012b} are directly applicable to this formulation.
-
-\end{description}
+%\end{description}
 
 \section{Conclusions}
 \label{conclusion}
@@ -583,14 +685,14 @@ Petrobras, PGS, Total SA, WesternGeco and Woodside.
 \begin{tabular}{c|c|c|p{5cm}}
          & \# PDE's & Storage & Gauss-Newton update \\
 \hline
-penalty  &  $N_s \times N_f $  &    $N_g$     & solve sparse SPSD system  in $N_g$ unknowns \\
+penalty  &  $M$  &    $N$     & solve matrix-free linear system in $N$ unknowns, requires $M$ (overdetermined) PDE solves per mat-vec \\
 \hline
-reduced  &  $2(N_s \times N_f) $  &    $2N_g$     & solve matrix-free linear system in $N_g$ unknowns, requires $N_f \times N_s$ per mat-vec                   \\
+reduced  &  $2M $  &    $2N$     & solve matrix-free linear system in $N$ unknowns, requires $2M$ PDE solves per mat-vec                   \\
 \hline
-all-at-once&   0   &    $N_f \times N_s \times N_g$   &  solve sparse symmetric, possibly indefinite system in $(N_f + N_s + 1) \times N_g$ unknowns \\ 
+all-at-once&   0   &    $(M+1) \times N$   &  solve sparse symmetric, possibly indefinite system in $(M + 1) \times N3$ unknowns \\ 
 \end{tabular}
-\caption{Leading order computation and storage costs per iteration of different methods; $N_s$ denotes the number of sources, $N_f$ denotes the number of frequencies and $N_g$ denotes the number of gridpoints.
-for large-scale seismic inverse problems we typically have $N_s = \mcl{O}(10^6)$, $N_f = \mcl{O}(10^1)$ and $N_g = \mcl{O}(10^9)$}
+\caption{Leading order computation and storage costs per iteration of different methods; $M$ denotes the number of experiments and $N$ denotes the number of gridpoints.
+for large-scale 3D seismic inverse problems we typically have $M = \mcl{O}(10^6)$ and $N = \mcl{O}(10^9)$.}
 \label{table:costs}
 \end{table}
 \clearpage
