@@ -8,7 +8,7 @@ mt = 1 + exp(-1e1*(x-.5).^2);
 %% data
 At = getA(f,mt);
 Q  = speye(n);
-Q  = Q(:,[1 end]);
+Q  = Q(:,[2 end-1]);
 Dt = Q'*(At\(Q));
 
 M = size(Q,2);

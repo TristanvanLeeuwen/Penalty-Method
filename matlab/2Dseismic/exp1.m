@@ -2,7 +2,7 @@
 n  = [51 51];
 N  = prod(n);
 h  = [20 20];
-f  = 7;
+f  = 5;
 c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
@@ -31,11 +31,11 @@ model.xr = xr;
 
 m0 = ones(prod(n),1)/c0.^2;
 A0 = getA(f,m0,h,n);
-v0=randn(N,1);for k = 1:100, v1 = A0'\(P'*P*(A0\v0));mu=real(v1'*v0);v0=v1/norm(v1);end
+mu = real(eigmax(@(x)A0'\(P'*P*(A0\x)),prod(n)));
 
 opts.maxit  = 100;
 opts.M      = 5;
-opts.tol    = 1e-6;
+opts.tol    = 1e-9;
 opts.lintol = 1e-1;
 opts.method = 'GN';
 
@@ -59,20 +59,34 @@ fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda,model);
 [m3,info3] = QGNewton(fh,m0,opts);
 
 %% plot
-figure;
-semilogy(infor(:,1),infor(:,[5]),'k--',infor(:,1),infor(:,[7]),'k-');legend('L_m','L_v');hold on;
-semilogy(info1(:,1),info1(:,[5]),'r--',info1(:,1),info1(:,[7]),'r-');hold on
-semilogy(info2(:,1),info2(:,[5]),'b--',info2(:,1),info2(:,[7]),'b-');hold on;
-semilogy(info3(:,1),info3(:,[5]),'g--',info3(:,1),info3(:,[7]),'g-');
+% figure;
+% semilogy(infor(:,1),infor(:,[5]),'k--',infor(:,1),infor(:,[7]),'k-');legend('L_m','L_v');hold on;
+% semilogy(info1(:,1),info1(:,[5]),'r--',info1(:,1),info1(:,[7]),'r-');hold on
+% semilogy(info2(:,1),info2(:,[5]),'b--',info2(:,1),info2(:,[7]),'b-');hold on;
+% semilogy(info3(:,1),info3(:,[5]),'g--',info3(:,1),info3(:,[7]),'g-');
+
+plot2 = @(m)imagesc(x,z,reshape(m,n));
+
+figure;plot2(-P'*P*ones(prod(n),1));colormap(gray);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
+
+figure;plot2(mt);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');colorbar;
 
 figure;
-semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k--');hold on;
+semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
 semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
 semilogy(sqrt(sum(info2(:,[5,6,7]).^2,2)),'b');hold on;
 semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');
+legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10');
+xlabel('iteration');ylabel('||\nabla L||_2');
 
-figure;
-subplot(2,2,1);imagesc(reshape(real(mr),n));axis equal tight;
-subplot(2,2,2);imagesc(reshape(real(m1),n));axis equal tight;
-subplot(2,2,3);imagesc(reshape(real(m2),n));axis equal tight;
-subplot(2,2,4);imagesc(reshape(real(m3),n));axis equal tight;
+
+figure;plot2(mt);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
+figure;plot2(mr);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
+figure;plot2(m1);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
+figure;plot2(m2);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
+figure;plot2(m3);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
+
+savefig(1:8,'../../doc/figs/2D_exp1');
+
+table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
+latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp1.tex');

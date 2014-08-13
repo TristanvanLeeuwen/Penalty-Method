@@ -8,7 +8,7 @@ mt = 1 + exp(-1e1*(x-.5).^2);
 %% data
 At = getA(f,mt);
 Q  = speye(n)*(n-1);
-Q  = Q(:,[1 end]);
+Q  = Q(:,[2 end-1]);
 Dt = Q'*(At\(Q));
 
 %% inversion
@@ -20,7 +20,7 @@ mu = real(eigmax(@(x)A0'\(Q*Q'*(A0\x)),n));
 
 opts.maxit  = 100;
 opts.M      = 100;
-opts.tol    = 1e-8;
+opts.tol    = 1e-9;
 opts.lintol = 1e-3;
 opts.method = 'GN';
 
@@ -58,11 +58,14 @@ semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
 semilogy(sqrt(sum(info2(:,[5,6,7]).^2,2)),'b');hold on;
 semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10');
-xlabel('iteration');ylabel('|\nabla \mathcl{L}|');
+xlabel('iteration');ylabel('||\nabla L||_2');
 
 figure;
 plot(x,mt,'k--',x,mr,'k',x,m1,'r',x,m2,'b',x,m3,'g');
 legend('true','reduced','\lambda = 0.1','\lambda = 1','\lambda = 10');
 xlabel('x');ylabel('m(x)');
 
+savefig(1:2,'../../doc/figs/1D_exp1');
 
+table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
+latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/1D_exp1.tex');
