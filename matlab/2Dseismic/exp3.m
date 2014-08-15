@@ -70,7 +70,7 @@ end
 m1 = m0;
 info1 = [];
 for k = 1:nf
-    lambda1 = 1e-2*mu(k);
+    lambda1 = 1e-1*mu(k);
     model.f = f(k);
     fh = @(m)phi_lambda(m,Q,Dt(:,:,k),alpha,lambda1,model);
     [m1,infok] = QGNewton(fh,m1,opts);
