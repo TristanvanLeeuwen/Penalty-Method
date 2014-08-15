@@ -76,7 +76,7 @@ semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
 semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
 semilogy(sqrt(sum(info2(:,[5,6,7]).^2,2)),'b');hold on;
 semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');
-legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10');
+legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','southwest');
 xlabel('iteration');ylabel('||\nabla L||_2');
 
 

@@ -57,8 +57,8 @@ semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
 semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
 semilogy(sqrt(sum(info2(:,[5,6,7]).^2,2)),'b');hold on;
 semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');
-legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10');
-xlabel('iteration');ylabel('||\nabla L||_2');
+legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','southwest');
+xlabel('iteration');ylabel('||\nabla L||_2');ylim([1e-10 2]);xlim([1 7])
 
 figure;
 plot(x,mt,'k--',x,mr,'k',x,m1,'r',x,m2,'b',x,m3,'g');

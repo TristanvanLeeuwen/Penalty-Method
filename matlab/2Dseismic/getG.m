@@ -19,12 +19,19 @@ function G = getG(f,m,u,h,n)
 omega = 2*pi*f;
 N     = prod(n);
 
+% %
+% w = [0 ones(1,n(1)-2) 0];
+% if n(2)>1
+%     w = w(:)*[0 ones(1,n(2)-2) 0];
+% end
+% w = w(:);
+% 
+% G = omega^2*spdiags(1e-6*w.*u,0,N,N) + 1i*omega*spdiags(1e-3*(1-w).*u./(2*sqrt(m)),0,N,N);
+
 %%
-w = [0 ones(1,n(1)-2) 0];
-if n(2)>1
-    w = w(:)*[0 ones(1,n(2)-2) 0];
-end
-w = w(:);
+omega = 1e-3*2*pi*f;
+N     = prod(n);
 
-G = omega^2*spdiags(1e-6*w.*u,0,N,N) + 1i*omega*spdiags(1e-3*(1-w).*u./(2*sqrt(m)),0,N,N);
+a = ones(n); a(:,[1 end]) = .5; a([1 end],:) = .5; a = a(:);
 
+G = omega^2*diags(a.*u) + (2i*omega/h(1))*diags(.5*(1-a).*u./sqrt(m));

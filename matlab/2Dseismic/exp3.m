@@ -1,5 +1,5 @@
 %% setup
-f  = [ 3 6 10];
+f  = [1 3 6 10];
 zr = {60};
 xr = {100:100:10000};
 ns = length(zr{1})*length(xr{1});
@@ -30,7 +30,7 @@ n = [length(z) length(x)];
 
 [zz,xx] = ndgrid(z,x);
 
-v0 = (1.5 + 1*1e-3*max(zz-300,0));
+v0 = (1.5 + .5*1e-3*max(zz-300,0));
 m0 = 1./v0(:).^2;
 P  = getP(h,n,zr,xr);
 
@@ -70,7 +70,7 @@ end
 m1 = m0;
 info1 = [];
 for k = 1:nf
-    lambda1 = 1e-1*mu(k);
+    lambda1 = 1e-2*mu(k);
     model.f = f(k);
     fh = @(m)phi_lambda(m,Q,Dt(:,:,k),alpha,lambda1,model);
     [m1,infok] = QGNewton(fh,m1,opts);
@@ -129,7 +129,7 @@ figure;plot2(real(1./sqrt(m1)));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [
 figure;plot2(real(1./sqrt(m2)));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxis([1.5 4.5]);
 figure;plot2(real(1./sqrt(m3)));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxis([1.5 4.5]);
 
-% savefig(1:8,'../../doc/figs/2D_exp1');
+savefig(1:9,'../../doc/figs/2D_exp3');
 % 
-% table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
-% latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp1.tex');
+table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
+latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp3.tex');

@@ -337,7 +337,7 @@ The former can be re-written as
 \[
 \mbf{u}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-T}PP^TA^{-1}\right)^{-1}\left(\mbf{q} + \lambda^{-1}A^{-T}P\mbf{d}\right).
 \]
-For $\lambda > \sigma_{\max}(P^TA^{-1})$, we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$
+For $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$, we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$
 and find that
 \bq
 \mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
@@ -368,7 +368,7 @@ for any $\mbf{m}_{\lambda}$
 \mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P(P^T\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
 &=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P(P^T\mbf{u}_{\lambda} - \mbf{d}) = 0.
 \eq
-Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\sigma_{\max}(P^TA)$ presented in Lemma , we find
+Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$ presented in Lemma , we find
 \bq
 \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\nonumber\\
 &=& \lambda^{-1}A(\mbf{m})^{-T}P\left(\mbf{d} - P^TA(\mbf{m})^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-2}).
@@ -378,7 +378,7 @@ Thus we find
 \bq
 \|\mcl{L}_{\mathbf{v}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \lambda^{-1}\mu\sigma,
 \eq
-where $\sigma$ is the noise level and $\mu$ is the largest singular value of $P^TA(\mbf{m}^*)^{-1}$.
+where $\sigma$ is the noise level and $\mu$ is the largest eigenvalue of $A(\mbf{m}^*)^{-T}PP^TA(\mbf{m}^*)^{-1}$.
 
 At a point $\mbf{m}^*$ for which 
 $\|\nabla\phi_{\lambda}(\mbf{m}^*)\|_2 \leq \epsilon$
@@ -389,7 +389,7 @@ we immediately find that
 
 Finally, we find that 
 \bq
-\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2\leq \sqrt{\epsilon^2 + \lambda^{-2}\mu^2\sigma^2}.
+\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2\leq \sqrt{\epsilon^2 + \lambda^{-2}\mu^2\sigma^2} \leq \epsilon + \mathcal{O}(\lambda^{-1}).
 \eq
 \qed
 \end{proof}
@@ -446,21 +446,27 @@ systems \cite{Censor1983}.
 
 The augmented system $A^TA + \lambda^{-1} PP^T$ is a rank $L$ modification of the 
 original system $A^TA$. It follows from \cite[Thm 8.1.8]{Golub1996} that the eigenvalues are related as
-\[
+
+\bq
 \mu_n(A^TA + \lambda^{-1} PP^T) = \mu_n(A^TA) + a_n \lambda^{-1},
-\]
+\eq
+
 where $\mu_n(B)$ denotes the $n$-th eigenvalue of $B$ and $\sum_{n=1}^{N} a_n = L$. 
-This means that at worst, $L$ eigenvalues are shifted by $\lambda^{-1}$ while at best, all the eigenvalues are 
+This means that at worst, 1 eigenvalue is shifted by $L\lambda^{-1}$ while at best, all the eigenvalues are 
 shifted by $LN^{-1}\lambda^{-1}$. For the condition numbers we find
-\[
-\kappa(A^TA)\left(1 + \frac{L}{\lambda \mu_N(A^TA)}\right)^{-1}\leq \kappa(A^TA + \lambda^{-1} PP^T) \leq \left(1 + \frac{L}{\lambda \mu_1(A^TA)}\right)
-\]
+\bq
+C_N^{-1}\kappa(A^TA)\leq \kappa(A^TA + \lambda^{-1} PP^T) \leq C_1\kappa(A^TA),
+\eq
+where $C_i = \left(1 + \frac{L}{\lambda \mu_i(A^TA)}\right)$.
 
-To illustrate this, we show a few examples for a 1D elliptic PDE $\imath\omega - \partial_x\left(m(x)\partial_x\right)$ with Dirichlet boundary conditions
-and the 2D Helmholtz equation $\omega^2m(x) + \nabla^2$ with absorbing boundary conditions. We take $P$ to be either a restricted identity matrix
-or a restricted Fourier matrix. 
-
-\TODO{Show a few numerical examples}
+To illustrate this, we show a few examples for a 1D elliptic PDE $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
+and the 1D Helmholtz equation $\omega^2m(x) + \partial_x^2$, both with Neumann boundary conditions. Both are discretized using
+first-order finite-differences on $x \in [0,1]$ with $N=51$ points for $\omega = 10\pi$ and $m=1$.
+The sampling matrix $P$ consists of $L$ columns of the identity matrix (regularly sampled).
+The ratio of the condition numbers of $A^TA$ and $A^TA + \lambda^{-1}PP^T$ for the elliptic and Helmholtz equation are shown in tables \ref{table:1D_example1a} and 
+\ref{table:1D_example1b}. For these examples, the condition numnber of the augmented system is actually lower than that of the orinal system. The eigenvalues 
+are shown in figures \ref{fig:1D_example1} and \ref{fig:2D_example1}. These show that the actual eigenvalues distributions do not change significantly. We expect
+that iterative methods will perform similarly on the augmented system as they would on the original system.
 
 When the state vector does not fit in memory, it is not so obvious how the overdetermined system should
 be solved. An example is explicit time-stepping, where the system matrix exhibits a lower-triangular block-structure.
@@ -504,15 +510,15 @@ We consider the PDE
 \bq
 \partial_t u(t,x) = \partial_x\left(m(x)\partial_x\right) u(t,x),
 \eq
-on the domain $x = [0,1]$ with Dirichlet boundary conditions. 
+on the domain $x = [0,1]$ with Neumann boundary conditions. 
 A discretization in the temporal Fourier domain gives
 \bq
-A(\mbf{m}) = \imath\omega I + D^T\mathsf{diag}(\mbf{m})D,
+A(\mbf{m}) = \imath\omega\mathsf{diag}(\mbf{w}) + D^T\mathsf{diag}(\mbf{m})D,
 \eq
-where $\omega$ is the angular frequency and $D$ is the first-order finite-difference matrix. 
+where $\omega$ is the angular frequency, $\mbf{w} = [\frac{1}{2}; 1, \ldots, 1; \frac{1}{2}]$ and $D$ is the first-order finite-difference matrix. 
 The Jacobian is given by $G(\mbf{m},\mbf{u}) = D^T\mathsf{diag}(D\mbf{u})$. 
 
-The domain is discretized using $N=51$ points and we let $P = Q = [\mbf{e}_2, \mbf{e}_{N-1}]*(N-1)$.
+The domain is discretized using $N=51$ points and we let $P = Q = [\mbf{e}_2, \mbf{e}_{N-1}](N-1)$.
 For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-3}$ and set the regularization parameter $\alpha = 10^{-6}$.
 The initial parameters are $\mbf{m}^0 = \mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
 The results are shown in figure \ref{fig:1D_exp1}. The convergence plot, figure \ref{fig:1D_exp1} (a), shows the predicted behaviour of the penalty method; the norm
@@ -530,19 +536,17 @@ Discretization in the temporal Fourier domain leads to a scalar Helmholtz equati
 A(\mbf{m}) = \mathsf{diag}(\mbf{s}) - D^TD,
 \eq
 where $D = [D_1; D_2]$ is the a finite-difference discresitation of $\nabla$ and $s_i = \omega^2 m_i$ in the interior 
-and $s_i = \imath\omega\sqrt{m_i}$ on the boundary.
+and $s_i = \omega^2 m_i/2 + \imath\omega\sqrt{m_i}/h$ on the boundary.
 The Jacobian is given by
 \bq
 G(\mbf{m},\mbf{u}) = \mathsf{diag}(\mbf{s}')\mathsf{diag}(\mbf{u}),
 \eq
-where $s'_i = \omega^2$ in the interior and $s'_i = \imath\omega/(2\sqrt{m_i})$ on the boundary.
+where $s'_i = \omega^2$ in the interior and $s'_i = \omega^2/2 + \imath\omega/(2\sqrt{m_i})$ on the boundary.
 
 \subsubsection{Toy example.}
 The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N=51\times 51$ points. We take $P=Q$ and the points sampled by 
 $P$ are shown in figure \ref{fig:2D_exp1a} (a). The ground truth $\mbf{m}^*$ is shown in figure  \ref{fig:2D_exp1a} (b). We use a single frequency
 of $5 Hz$ (i.e., $\omega = 10\pi$).
-For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-1}$ and set the regularization parameter $\alpha = 10^{1}$.
-The initial parameters are $\mbf{m}^0 = \frac{1}{4}\mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
 
 First, we investigate the sensitivity of the misfit functions $\phi$ and $\phi_{\lambda}$ by plotting $\phi(\mbf{m}^* + \delta_1 \mbf{v} + \delta_2\mbf{w})$ and
 $\phi_{\lambda}(\mbf{m}^* + \delta_1 \mbf{v}_{\lambda} + \delta_2\mbf{w}_{\lambda})$ as a function of $(\delta_1,\delta_2)$. We set $\alpha = 0$ to 
@@ -554,11 +558,12 @@ The misfit as a function of $(\delta_1,\delta_2)$ is shown in figure \ref{fig:2D
 The first exhbits strong non-linearity and some local minima while for $\lambda=0.1$ the misfit is much better behaved. For larger values $\lambda$ the penalty misfit
 starts to behave more like the reduced misfit.
 
-The results of the inversion are shown in figure \ref{fig:2D_exp1b}. 
+For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-1}$ and set the regularization parameter $\alpha = 10^{1}$.
+The initial parameters are $\mbf{m}^0 = \frac{1}{4}\mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
 The convergence plot, figure \ref{fig:2D_exp1b} (top), shows the predicted behaviour 
 of the penalty method; the norm of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$. 
 The resulting parameter estimates are very similar as can be seen 
-in figure \ref{fig:exp2D_1b} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}.
+in figure \ref{fig:2D_exp1b} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}.
 
 \subsubsection{Example 2}
 
@@ -566,30 +571,38 @@ in figure \ref{fig:exp2D_1b} (bottom). The actual costs of the inversion are lis
 \section{Discussion}
 \label{discussion}
 This paper lays out the basics of an efficient implementation of the
-penalty method for PDE-constrained optimization. 
+penalty method for PDE-constrained optimization in the context . 
 
 \section{Conclusions}
 \label{conclusion}
-We have presented a new method for PDE-constrained optimization based on
-a penalty formulation of the constrained problem. The method
-relies on solving for the state variables from an augmented system that
-is comprised of the original discretized PDE and the measurements. The
-resulting estimates of the state variables can be used to directly
-estimate the control variable from the PDE via an equation-error
-approach. The main benefits of this method are: \emph{i)} The state
-variables for each experiment can be obtained independently and do not
-have to be stored or updated as part of an iterative optimization
-procedure, \emph{ii)} the penalty formulation leads to a less non-linear
-formulation than the reduced approach where the PDE-constraint is
-eliminated explicitly, and \emph{iii)} the gradient of the objective
-with respect to the control variable can be computed directly from the
-state variables, without the need to solve adjoint PDEs. We illustrate
-the approach on a non-linear seismic inverse problem, showing that the
-reduced non-linearity leads to significantly better results than the
-reduced approach at roughly half the computational costs (due to the
-fact that there is no adjoint equation to solve). Moreover, the penalty
-approach succesfully mitigates some of the the issues with local minima
-making the procedure less sensitive to the initial model.
+We have presented a method for PDE-constrained optimization with linear PDEs. The main application
+is parameter estimation in inverse problems.
+The method is based on a quadratic penalty formulation of the constrained problem. This reformulation
+results in a an unconstrained optimization problem in both the control and state variables.
+To avoid having to store and update the state variables as part of the optimization, we explicitly eliminate
+the state variables by solving an augmented system that is comprised of the original discretized PDE and the measurements. 
+The proposed method combines features from both the \emph{all-at-once}
+approach, in which the states and parameters are updated simultaneously, and
+the conventional \emph{reduced} approach, in which the PDE-constraints are eliminated explicitly.
+While having a similar computational complexity as the conventional reduced approach, it explores
+a larger search space by not satisfying the PDE-constraints exactly. 
+
+We show that we can (theoretically)
+find a stationary point of the Lagrangian of the constrained problem within a given tolerance as long as the penalty parameter, $\lambda$,
+is chosen large enough. While theoretically we need $\lambda \uparrow \infty$, we can suffice with solving the problem
+for a finite $\lambda$ to reach the stationary point within finite precision. 
+
+The main algorithmic difference with the conventional reduced approach is the way the states are eliminated from the problem.
+Instead of solving the PDEs, we formulate an overdetermined set of equations that consists of the discretized PDE and the measurements.
+We discuss the properties of this augmented system and show with a few numerical examples that the eigenvalues are not alternated dramatically.
+Thus, it is plausible that the augmented system can be solved efficiently using the same approach as for the original PDE.
+
+The numerical examples show that
+very good results can be obtained by using even a single, relatively small, value of $\lambda$.
+The numerical examples further show that by enlarging the search space, the optimzation problem
+may actually be less non-linear and that in some cases a better parameter reconstruction 
+is obtained when compared to the conventional reduced approach.
+
 
 \section*{Acknowledgments}
 The authors wish to thank Dan and Rachel Gordon for valuable discussions
@@ -603,6 +616,28 @@ Petrobras, PGS, Total SA, WesternGeco and Woodside.
 
 
 \clearpage
+
+\begin{table}
+\centering
+\input{./figs/1D_example1_a}
+\caption{Ratio of the condition numbers of $A^TA + \lambda P_LP_L^T$ and $A^TA$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
+and $P_L$ is a restricted identify matrix of rank $L$. }
+\label{table:1D_example1a}
+\end{table}
+
+\begin{table}
+\centering
+\input{./figs/2D_example1_a}
+\caption{Ratio of the condition numbers of $A^TA + \lambda P_LP_L^T$ and $A^TA$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 m + \partial_x^2$ and $P_L$ is a restricted identify matrix of rank $L$. }
+\label{table:1D_example1b}
+\end{table}
+
+% \begin{table}
+% \centering
+% \input{./figs/1D_example1_b}
+% \caption{Condition numbers}
+% \label{table:1D_example1b}
+% \end{table}
 
 \begin{table}
 \begin{tabular}{c|c|c|p{5cm}}
@@ -634,6 +669,38 @@ for large-scale 3D seismic inverse problems we typically have $M = \mcl{O}(10^6)
 \end{table}
 
 \clearpage
+
+\begin{figure}
+\centering
+\begin{tabular}{ccc}
+\includegraphics[scale=.2]{./figs/1D_example1_a}&
+\includegraphics[scale=.2]{./figs/1D_example1_b}&
+\includegraphics[scale=.2]{./figs/1D_example1_c}\\
+% \includegraphics[scale=.2]{./figs/1D_example1_d}&
+% \includegraphics[scale=.2]{./figs/1D_example1_e}&
+% \includegraphics[scale=.2]{./figs/1D_example1_f}\\
+{\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
+\end{tabular}
+\caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_LP_L^T$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
+and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^TA$ are also shown.}
+\label{fig:1D_example1}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{tabular}{ccc}
+\includegraphics[scale=.2]{./figs/2D_example1_a}&
+\includegraphics[scale=.2]{./figs/2D_example1_b}&
+\includegraphics[scale=.2]{./figs/2D_example1_c}\\
+% \includegraphics[scale=.2]{./figs/1D_example1_d}&
+% \includegraphics[scale=.2]{./figs/1D_example1_e}&
+% \includegraphics[scale=.2]{./figs/1D_example1_f}\\
+{\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
+\end{tabular}
+\caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_LP_L^T$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 + \partial_x^2$
+and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^TA$ are also shown.}
+\label{fig:2D_example1}
+\end{figure}
 
 \begin{figure}
 \centering

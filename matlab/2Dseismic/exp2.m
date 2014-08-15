@@ -129,7 +129,7 @@ figure;plot2(real(1./sqrt(m1)));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [
 figure;plot2(real(1./sqrt(m2)));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxis([1.5 4.5]);
 figure;plot2(real(1./sqrt(m3)));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxis([1.5 4.5]);
 
-% savefig(1:8,'../../doc/figs/2D_exp1');
+savefig(1:9,'../../doc/figs/2D_exp2');
 % 
-% table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
-% latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp1.tex');
+table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
+latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp2.tex');

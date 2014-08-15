@@ -68,8 +68,8 @@ P = getP(model.h,model.n,model.zr,model.xr);
 G = @(u)getG(model.f,m,u,model.h,model.n);
 
 %% compute mat-vec
-y = mask.*y;
-y =  alpha*(L'*L)*x;
+y = mask.*x;
+y = alpha*(L'*L)*y;
 
 for k = 1:ns
     y = y + real(lambda*G(U(:,k))'*G(U(:,k))*x - lambda^2*G(U(:,k))'*A*((P'*P + lambda*(A'*A))\(A'*G(U(:,k))*x)));
