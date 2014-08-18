@@ -50,7 +50,7 @@ model.mask = mask(:);
 
 opts.maxit  = 20;
 opts.M      = 5;
-opts.tol    = 1e-2;
+opts.tol    = 1e-3;
 opts.lintol = 1e-1;
 opts.method = 'lbfgs';
 

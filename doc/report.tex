@@ -3,7 +3,7 @@
 
 \begin{document}
 
-\title[A penalty method for PDE-constrained optimization in inverse problems]{A penalty method for PDE-constrained optimization}
+\title[A penalty method for inverse problems]{A penalty method for PDE-constrained optimization in inverse problems}
 \author{Tristan van Leeuwen$^1$ and Felix J. Herrmann$^2$}
 \address{$^1$Department of Mathematics, Utrecht University, Utrecht, the Netherlands\\
 $^2$ Dept. of Earth, Ocean and Atmospheric Sciences, University of British Columbia, Vancouver (BC), Canada.}
@@ -28,12 +28,13 @@ In this paper, we present an alternative method that aims to combine the advanta
 
 \section{Introduction}
 In inverse problems, the goal is to infer physical parameters (e.g., density, soundspeed or conductivity) 
-from partial measurements of solutions of a partial differential equation (PDE) that describes the underlying 
-physics (e.g., the wave-equation or Maxwell's equation). 
-The parameters typically appear as coefficients in the PDE. These problems arise in many applications such as
+from indirect observations. When the underlying model is described by a partial differential equation (PDE)
+(e.g., the wave-equation or Maxwell's equation), the observed data are typically partial measurements
+of the solutions of the PDE for multiple right-hand-sides. The parameters typically appear as coefficients in the PDE. 
+hese problems arise in many applications such as
 geophysics \cite{Haber2004,Epanomeritakis08}, medical imaging \cite{Abdoulaev2005} and non-destructive testing.
 
-For linear PDEs, the resulting optimzation problem (after discretization) can be written as
+For linear PDEs, the inverse problem can be formulated (after discretization) as a constrained optimization problem of the form
 \bq
 \label{eq:constr}
 \min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 \quad 
