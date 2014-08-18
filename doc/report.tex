@@ -3,35 +3,33 @@
 
 \begin{document}
 
-\title[A penalty method for PDE-constrained optimization]{A penalty method for PDE-constrained optimization}
+\title[A penalty method for PDE-constrained optimization in inverse problems]{A penalty method for PDE-constrained optimization}
 \author{Tristan van Leeuwen$^1$ and Felix J. Herrmann$^2$}
 \address{$^1$Department of Mathematics, Utrecht University, Utrecht, the Netherlands\\
 $^2$ Dept. of Earth, Ocean and Atmospheric Sciences, University of British Columbia, Vancouver (BC), Canada.}
 \ead{T.van.Leeuwen@math.uu.nl}
 
 \begin{abstract}
-We present a method for solving PDE constrained optimization problems
-based on a penalty formulation. This method aims to combine advantages
-of both full-space and reduced methods by exploiting a large
-search-space (consisting of both control and state variables) while
-allowing for an efficient implementation that avoids storing and
-updating the state-variables. This leads to a method that has roughly
-the same per-iteration complexity as conventional reduced approaches
-while defining an objective that is less non-linear in the control
-variable by implicitly relaxing the constraint. We apply the method to a
-seismic inverse problem where it leads to a particularly efficient
-implementation when compared to a conventional reduced approach as it
-avoids the use of adjoint state-variables. Numerical examples illustrate
-the approach and suggest that the proposed formulation can indeed
-mitigate some of the well-known problems with local minima in the
-seismic inverse problem.
+Many inverse and parameter estimation problems can be written as PDE-constrained optimization problems. 
+The goal, then, is to infer the parameters, typically coefficients of the PDE, from partial measurements
+of the solutions of the PDEs for several right-hand-sides. Such PDE-constrained
+problems can be solved by finding a stationary point of the Lagrangian. This entails simultaneously updating
+the paramaters and the (adjoint) state variables. 
+For large-scale problems, 
+such an \emph{all-at-once} approach not feasible as it requires storing all the state variables. In this case one usually
+resorts to a \emph{reduced} approach where the constraints are explicitly eliminated by solving the PDEs. These two approaches, 
+and variations thereon, are the main workhorses for solving PDE-constrained optimization problems arising from inverse problems.
+In this paper, we present an alternative method that aims to combine the advantages of both approaches.
+
+
 \end{abstract}
 
 \maketitle
 
 \section{Introduction}
-In parameter estimation, the goal is to infer physical parameters (e.g., density, soundspeed or conductivity) 
-from partial measurements of solutions of a partial differential equation (PDE) that describes the underlying physics (e.g., the wave-equation or Maxwell's equation). 
+In inverse problems, the goal is to infer physical parameters (e.g., density, soundspeed or conductivity) 
+from partial measurements of solutions of a partial differential equation (PDE) that describes the underlying 
+physics (e.g., the wave-equation or Maxwell's equation). 
 The parameters typically appear as coefficients in the PDE. These problems arise in many applications such as
 geophysics \cite{Haber2004,Epanomeritakis08}, medical imaging \cite{Abdoulaev2005} and non-destructive testing.
 
@@ -41,13 +39,14 @@ For linear PDEs, the resulting optimzation problem (after discretization) can be
 \min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 \quad 
 \mbox{s.t.} \quad A(\mathbf{m})\mathbf{u} = \mathbf{q},
 \eq
-where $\mathbf{m}$ is the (gridded) parameter of interest, $\mathbf{u}$ is the state variable and $\mathbf{d}$ are
+where $\mathbf{m}$ is the (gridded) parameter of interest (sometimes referred to as the control variable), $\mathbf{u}$ is the state variable and $\mathbf{d}$ are
 the observed data. The measurement process is modelled by taking inner products of the field with the columns of $P$. 
-Throughout the paper $^T$ denotes the (complex-conjugate) transpose. The matrix $A(\mathbf{m})\mathbf{u} = \mathbf{q}$ 
+Throughout the paper $^T$ denotes the (complex-conjugate) transpose. The system matrix $A(\mathbf{m})$ 
 represents the discretized PDE and $\mbf{q}$ is the source function. 
 
-Oftentimes, measurements are made from multiple independent experiments, 
+Oftentimes, measurements are made from multiple independent experiments
 in which case $\mathbf{u}$ is a block vector containing the state variables for different experiments. 
+Likewise $\mathbf{q}$ and $\mathbf{d}$ are block vectors containing the right-hand-sides and observations.
 For some applications, such as seismic inversion, $\mbf{m}$ may represent up to $\mcl{O}(10^9)$ unknowns 
 while $\mbf{u}$ may easily represent $\mcl{O}(10^{17})$ unknowns.
 
@@ -59,8 +58,9 @@ these constrained problems is based on the corresponding Lagrangian:
 \mcl{L}(\mbf{m},\mbf{u},\mbf{v})=  \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 
 + \mbf{v}^T\left(A(\mathbf{m})\mathbf{u} - \mathbf{q}\right),
 \eq
-A necessary condition for a solution to the constrained problem (\ref{eq:constr}) is that 
-it is a stationary point of the Lagrangian. 
+where $\mbf{v}$ is the Lagrange multiplier or adjoint state variable.
+A necessary condition for a solution $(\mathbf{m}^*,\mathbf{u}^*,mbf{v}^*)$ to the constrained problem (\ref{eq:constr}) is that 
+it is a stationary point of the Lagrangian, i.e. $\nabla\mcl{L}(\mathbf{m}^*,\mathbf{u}^*,mbf{v}^*) = 0$. 
 Such a stationary point may be found using a Newton-like method, which involves repeatedly solving
 the KKT system \cite{Haber2000}
 \bq
@@ -92,6 +92,7 @@ where
 \mcl{L}_{\mbf{u}} &=& A(\mathbf{m})^T\mathbf{v} + P(P^T\mathbf{u} - \mathbf{d}),\\
 \mcl{L}_{\mbf{v}} &=& A(\mathbf{m})\mathbf{u} - \mathbf{q},\\
 \eq
+is the gradient of the Lagrangian, 
 and
 \bq
 G(\mbf{m},\mbf{u}) &=& \frac{\partial A(\mbf{m})\mbf{u}}{\partial \mbf{m}},\\
@@ -100,10 +101,11 @@ R(\mbf{m},\mbf{u},\mbf{v}) &=& \frac{\partial G(\mbf{m},\mbf{u})^T\mbf{v}}{\part
 \eq
 These Jacobian matrices are typically sparse and can be computed analytically.
 In practice we are usually satisfied with satisfying the optimality conditions up to some 
-tolerance $\|\nabla \mcl{L}(\mathbf{m},\mathbf{u},mbf{v})\|_2\leq \epsilon$.
+tolerance $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,mbf{v}^*)\|_2\leq \epsilon$.
 
-An advantages of such an all-at-once approach are that it eliminates the need to
-solve the PDEs explicitly. However, this approach is often unfeasible
+An advantage of such an all-at-once approach are that it eliminates the need to
+solve the PDEs explicitly. The constraints are only (approximately) satisfied upon convergence.
+However, this approach is often unfeasible
 for the large-scale applications we have in mind because it involves simultaneously updating
 (and hence storing) all the variables (up to $\mcl{O}(10^{17})$). 
 
@@ -115,7 +117,9 @@ Instead, one usually considers a \emph{reduced} problem that is obtained by elim
 \eq
 where $\mbf{u}(\mbf{m}) = A(\mathbf{m})^{-1}\mathbf{q}$.
 The resulting optimization problem has a much smaller dimension and can be solved using black-box 
-non-linear optimization methods. The gradient and the Hessian of 
+non-linear optimization methods. In contrast to the \emph{all-at-once} method, the constraints are always satisfied.
+
+The gradient and the Hessian of 
 $\phi$ are given by
 
 \bq
@@ -152,32 +156,42 @@ $\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_
 The disadvantage of this approach is that it
 requires the solution of the PDEs at each update, making it computationally very expensive. 
 It also strictly enforces the constraint at each iteration, which might lead to a very
-nonlinear problem in $\mbf{m}$. 
-%Moreover, the corresponding Hessian is typically a
-%dense matrix that cannot be stored and computing its action involves additional
-%PDE solves. Practical approaches are usually based on Quasi-Newton approximations of
-%the reduced Hessian.
+nonlinear problem in $\mbf{m}$. To illustrate this, consider the following example.
+
+\begin{example}
+Consider the following constrained optimization problem
+\[
+\min_{m,u} \|u-2\|_2^2 \quad, s.t. \quad  mu = 1.
+\]
+\[
+\mcl{L} \|u-2\|_2^2 + v(mu-1)
+\]
+\[
+\min_{m} \|m^{-1} - 2\|_2^2.
+\]
+
+\end{example}
 
 \subsection{Contributions and outline}
 In this paper we present an alternative to the reduced approach which
-has a roughly equivalent per-iteration complexity in terms of PDE solves
+has a roughly equivalent per-iteration complexity in terms of PDE-solves
 and storage but retains some of the characteristics of the all-at-once
 approach in the sense that it exploits a larger search space by not
 enforcing the constraints at each iteration.
 
-The approach is based on a \emph{penalty} formulation of the constrained problem,
+The approach is based on a \emph{penalty} formulation of the constrained problem, 
 the solution of which (theoretically) satisfies the optimality conditions of the constrained problem (\ref{eq:constr}) 
 to arbitrary precision for an appropriate choice of the penalty parameter.
-Such a reformulations of the constrained problem are well-known, 
-but for the sake of completeness we give a brief overview in section \ref{penalty}. The main contribution
-of this paper is a solution strategy, which is based on the elimination of the state variable $u$ via
+Such reformulations of the constrained problem are well-known but are, to our best knowledge, 
+not being used to solve large-scale inverse problems.
+The main contribution of this paper is the development of an efficient algorithm based on the penalty formulation
+for large-scale problems. Our approach is based on the elimination of the state variable $u$ via
 a \emph{variational projection} approach as detailed in section \ref{varpro}. The benefit of this approach is
-that it effectively eliminates these variables from the optizatiom problem and thus greatly reduces the dimensionality
-of the optimization problem. The resulting optimization problem leads to an alternative cost function $\phi_{\lambda}(\mathbf{m})$
-whose gradient and Hessian can be computed in a similar fashion as for the reduced approach. The main difference is that
-the state $\mathbf{u}$ in this case is not defined by solving the PDE, but instead is solved from an overdetermined
+that it greatly reduces the dimensionality of the optimization problem. This elimination leads to an alternative cost 
+function $\phi_{\lambda}(\mathbf{m})$ whose gradient and Hessian can be computed in a similar fashion as for the reduced approach.
+The main difference is that the state $\mathbf{u}$ in this case is not defined by solving the PDE, but instead is solved from an overdetermined
 system that involves both the PDE \emph{and} the data. Due to the special structure of the problems under consideration, this elimination 
-can be done efficiently, leading to a tractable algorith for large-scale problems. 
+can be done efficiently, leading to a tractable algorithm for large-scale problems. 
 Contrary to the conventional \emph{reduced} approach, the resulting algorihtm does \emph{not} enforce the constraint
 at each iteration and arguably leads to a less non-linear problem in $\mbf{m}$. It is outside the scope of the current
 paper to give a rigorous prove of this statement, but a case-study presented in section
@@ -194,6 +208,7 @@ Possible extensions and open problems are discussed in section
 \ref{discussion} and section \ref{conclusion} gives the conclusions.
 
 \subsection{Related work}
+\subsubsection{Equation-error approach}
 The proposed method is related to the \emph{equation-error} approach,
 which is typically used to identify the control variable in diffusion
 problems given a \emph{complete} measurement of the state: $\mbf{d} = \mbf{u}$ by
@@ -202,8 +217,9 @@ Given \emph{partial} measurements of the state $\mbf{d} = P^T\mbf{u}$, the propo
 way of bootstrapping this by first attempting to reconstruct the complete
 state from the partial measurements. 
 
-\section{Penalty methods}
-\label{penalty}
+\subsubsection{Penalty methods}
+\TODO{ADMM? Penalty methods, stress that we are proposing an efficient, novel, algorithm for PDE-constrained optimization in inverse problems.}
+
 A constrained optimization problems of the form (\ref{eq:constr})
 can be recast as an unconstrained problem by introducing a positive penalty function $\pi$ as follows
 \bq
@@ -213,7 +229,6 @@ can be recast as an unconstrained problem by introducing a positive penalty func
 The idea is that any departure from the constraint is penalized so that the solution of this 
 unconstrained problem will coincide with that of the constrained problem when $\lambda$ is large enough.
 
-\subsection{Quadratic penalty function}
 A quadratic penalty function $\pi(\cdot) = \ts{\frac{1}{2}}||\cdot||_2^2$ leads to a differentiable 
 unconstrained optimization problem (\ref{eq:penalty}) whose minimizer coincides with the solution
 of the constrained optimization problem (\ref{eq:constr}) when $\lambda \uparrow \infty$ \cite[Thm. 17.1]{Nocedal}. 
@@ -223,7 +238,6 @@ for large values of $\lambda$ when there are fewer constraints than variables. F
 optimization in inverse problems, there are enough constraints ($A(\mbf{m})$ is invertible) to prevent this and we will
 discuss this in more detail in section \ref{algorithm}.
 
-\subsection{Exact penalty methods}
 For certain non-smooth penalty functions, such as $\pi(\cdot) = ||\cdot||_1$, the minimizer of $\phi_{\lambda}$
 is a solution of the constrained problem for \emph{any} $\lambda \geq \bar{\lambda}$ for some $\bar{\lambda}$
 \cite[Thm. 17.3]{Nocedal}. In practice, a continuation
@@ -235,7 +249,6 @@ With large-scale applications in mind, we do not consider exact penalty methods 
 \section{A reduced penalty method}
 \label{varpro}
 Using a quadratic penalty function, the constrained problem (\ref{eq:constr}) is reformulated as
-
 \bq
 \label{eq:penalty}
 \min_{\mbf{m},\mbf{u}} \mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
