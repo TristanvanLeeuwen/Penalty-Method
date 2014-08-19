@@ -51,6 +51,7 @@ Likewise $\mathbf{q}$ and $\mathbf{d}$ are block vectors containing the right-ha
 For some applications, such as seismic inversion, $\mbf{m}$ may represent up to $\mcl{O}(10^9)$ unknowns 
 while $\mbf{u}$ may easily represent $\mcl{O}(10^{17})$ unknowns.
 
+In practice, some regularization is typically included in the formulation. For ease of notation we omit a regularization term.
 
 \subsection{All-at-once approach}
 A popular approach to solving
@@ -60,55 +61,56 @@ these constrained problems is based on the corresponding Lagrangian:
 + \mbf{v}^T\left(A(\mathbf{m})\mathbf{u} - \mathbf{q}\right),
 \eq
 where $\mbf{v}$ is the Lagrange multiplier or adjoint state variable.
-A necessary condition for a solution $(\mathbf{m}^*,\mathbf{u}^*,mbf{v}^*)$ to the constrained problem (\ref{eq:constr}) is that 
-it is a stationary point of the Lagrangian, i.e. $\nabla\mcl{L}(\mathbf{m}^*,\mathbf{u}^*,mbf{v}^*) = 0$. 
-Such a stationary point may be found using a Newton-like method, which involves repeatedly solving
-the KKT system \cite{Haber2000}
+A necessary condition for a solution $(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)$ to the constrained problem (\ref{eq:constr}) 
+is that it is a stationary point of the Lagrangian, i.e. $\nabla\mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*) = 0$. 
+The gradient and Hessian of the Lagrangian are given by 
 \bq
+\nabla\mcl{L}(\mbf{m},\mbf{u},\mbf{v}) &=& 
 \left(
-\begin{array}{ccc}
-R&K^T&G^T\\
-K&PP^T&A^T\\
-G&A&\\
-\end{array}
-\right)
-\left(
-\begin{array}{c}
-\delta \mbf{m}\\
-\delta \mbf{u}\\
-\delta \mbf{v}\\
-\end{array}
-\right)=
--\left(
 \begin{array}{c}
 \mcl{L}_{\mbf{m}}\\
 \mcl{L}_{\mbf{u}}\\
 \mcl{L}_{\mbf{v}}\\
 \end{array}
+\right)
+=\left(
+\begin{array}{c}
+G(\mbf{m},\mbf{u})^T\mathbf{v},\\
+A(\mathbf{m})^T\mathbf{v} + P(P^T\mathbf{u} - \mathbf{d}),\\
+A(\mathbf{m})\mathbf{u} - \mathbf{q},
+\end{array}
+\right),
+\eq
+and
+\bq
+\nabla^2\mcl{L}(\mbf{m},\mbf{u},\mbf{v}) &=& 
+\left(
+\begin{array}{ccc}
+R(\mbf{m},\mbf{u},\mbf{v})&K(\mbf{m},\mbf{v})^T&G(\mbf{m},\mbf{u})^T\\
+K(\mbf{m},\mbf{v})&PP^T&A(\mbf{m})^T\\
+G(\mbf{m},\mbf{u})&A(\mbf{m})&\\
+\end{array}
 \right),
 \eq
 where
 \bq
-\mcl{L}_{\mbf{m}} &=& G(\mbf{m},\mbf{u})^T\mathbf{v},\\
-\mcl{L}_{\mbf{u}} &=& A(\mathbf{m})^T\mathbf{v} + P(P^T\mathbf{u} - \mathbf{d}),\\
-\mcl{L}_{\mbf{v}} &=& A(\mathbf{m})\mathbf{u} - \mathbf{q},\\
+G(\mbf{m},\mbf{u}) =\frac{\partial A(\mbf{m})\mbf{u}}{\partial \mbf{m}},\,\,
+K(\mbf{m},\mbf{v}) = \frac{\partial A(\mbf{m})^T\mbf{v}}{\partial \mbf{m}},\nonumber\\
+R(\mbf{m},\mbf{u},\mbf{v}) = \frac{\partial G(\mbf{m},\mbf{u})^T\mbf{v}}{\partial \mbf{m}}\nonumber.
 \eq
-is the gradient of the Lagrangian, 
-and
-\bq
-G(\mbf{m},\mbf{u}) &=& \frac{\partial A(\mbf{m})\mbf{u}}{\partial \mbf{m}},\\
-K(\mbf{m},\mbf{v}) &=& \frac{\partial A(\mbf{m})^T\mbf{v}}{\partial \mbf{m}},\\
-R(\mbf{m},\mbf{u},\mbf{v}) &=& \frac{\partial G(\mbf{m},\mbf{u})^T\mbf{v}}{\partial \mbf{m}}.
-\eq
-These Jacobian matrices are typically sparse and can be computed analytically.
+These Jacobian matrices are typically sparse when $A$ is sparse and can be computed analytically.
+
+A stationary point may be found using a Newton-like method \cite{Haber2000}.
 In practice we are usually satisfied with satisfying the optimality conditions up to some 
-tolerance $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,mbf{v}^*)\|_2\leq \epsilon$.
+tolerance, i.e. $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
 
 An advantage of such an all-at-once approach are that it eliminates the need to
 solve the PDEs explicitly. The constraints are only (approximately) satisfied upon convergence.
 However, this approach is often unfeasible
 for the large-scale applications we have in mind because it involves simultaneously updating
 (and hence storing) all the variables (up to $\mcl{O}(10^{17})$). 
+
+\TODO{cite some literature on this: preconditioning, merit functions, etc. }
 
 \subsection{Reduced approach}
 Instead, one usually considers a \emph{reduced} problem that is obtained by eliminating the constraints from (\ref{eq:constr}):
@@ -145,6 +147,7 @@ Algorithm \ref{alg:reduced}.
 \STATE{$\mathbf{g}^k_{\mathrm{red}}    = G(\mathbf{m}^k,\mathbf{u}^k_{\mathrm{red}})^T\mathbf{v}^k_{\mathrm{red}}$}
 \STATE{$H^k_{\mathrm{red}} = G(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}})^TA(\mbf{m}^k)^{-T}PP^TA(\mbf{m}^k)^{-1}G(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}})$}
 \STATE{$\mathbf{m}^{k+1} =\mathbf{m}^k - \alpha^k \left(H_{\mathrm{red}}^{k}\right)^{-1}\mathbf{g}^k_{\mathrm{red}}$}
+\STATE{$k = k + 1$}
 \UNTIL{$\|\mbf{g}_{\mathrm{red}} ^k\|_2 \leq \epsilon$}
 \end{algorithmic}
 \end{algorithm}
@@ -162,31 +165,51 @@ nonlinear problem in $\mbf{m}$. To illustrate this, consider the following examp
 \begin{example}
 Consider the following constrained optimization problem
 \[
-\min_{m,u} \|u-2\|_2^2 \quad, s.t. \quad  mu = 1.
+\min_{m,u} \ts{\frac{1}{2}}\left(u^2 + m^2\right) \quad \mbox{s.t}. \quad  mu = 1.
 \]
 \[
-\mcl{L} \|u-2\|_2^2 + v(mu-1)
+\mcl{L}(m,u,v) =  \ts{\frac{1}{2}}\left(u^2 + m^2\right) + v(mu-1)
 \]
 \[
-\min_{m} \|m^{-1} - 2\|_2^2.
+\nabla\mcl{L} = \left(
+\begin{array}{c}
+m + vu\\u + vm\\mu - 1\\
+\end{array}
+\right)
 \]
-
+\[
+\nabla^2\mcl{L} = \left(
+\begin{array}{ccc}
+1&v&u\\
+v&1&m\\
+u&m&0\\
+\end{array}
+\right),
+\]
+\[
+\phi(m) = \ts{\frac{1}{2}}\left(m^{-2} + m^2 \right).
+\]
+\[
+\nabla\phi = m - m^{-3}
+\]
+\[
+\nabla^2\phi = 1 + 33m^{-4}
+\]
 \end{example}
 
-\subsection{Contributions and outline}
-In this paper we present an alternative to the reduced approach which
-has a roughly equivalent per-iteration complexity in terms of PDE-solves
-and storage but retains some of the characteristics of the all-at-once
-approach in the sense that it exploits a larger search space by not
-enforcing the constraints at each iteration.
 
+\subsection{Contributions and outline}
+In this paper we present an alternative to the reduced approach 
+for PDE-constrained optimization problems arising in inverse problems.
 The approach is based on a \emph{penalty} formulation of the constrained problem, 
 the solution of which (theoretically) satisfies the optimality conditions of the constrained problem (\ref{eq:constr}) 
 to arbitrary precision for an appropriate choice of the penalty parameter.
 Such reformulations of the constrained problem are well-known but are, to our best knowledge, 
 not being used to solve large-scale inverse problems.
 The main contribution of this paper is the development of an efficient algorithm based on the penalty formulation
-for large-scale problems. Our approach is based on the elimination of the state variable $u$ via
+for large-scale problems. For the sake of completeness we give a brief overview of penalty formulations
+for constrained problems in section \ref{penalty}.
+Our approach is based on the elimination of the state variable $u$ via
 a \emph{variational projection} approach as detailed in section \ref{varpro}. The benefit of this approach is
 that it greatly reduces the dimensionality of the optimization problem. This elimination leads to an alternative cost 
 function $\phi_{\lambda}(\mathbf{m})$ whose gradient and Hessian can be computed in a similar fashion as for the reduced approach.
@@ -197,31 +220,29 @@ Contrary to the conventional \emph{reduced} approach, the resulting algorihtm do
 at each iteration and arguably leads to a less non-linear problem in $\mbf{m}$. It is outside the scope of the current
 paper to give a rigorous prove of this statement, but a case-study presented in section
  \ref{examples} provides some numerical evidence.
-
+ 
 A detailed description of the proposed algorihtm is given in section \ref{algorithm}.
 Here, we also compare the penalty approach to both the all-at-once and the
 reduced approaches in terms of algorithmic complexity.
 
-Numerical examples on seismic inversion using both the penalty and reduced
-formulations are given in section \ref{examples}.
+Numerical examples on a 1D DC-resistivity and 2D seismic inversion problem are given in section \ref{examples}.
 
 Possible extensions and open problems are discussed in section
 \ref{discussion} and section \ref{conclusion} gives the conclusions.
 
-\subsection{Related work}
-\subsubsection{Equation-error approach}
-The proposed method is related to the \emph{equation-error} approach,
-which is typically used to identify the control variable in diffusion
-problems given a \emph{complete} measurement of the state: $\mbf{d} = \mbf{u}$ by
-solving $A(\mbf{m})\mbf{u} = \mbf{q}$ for $\mbf{m}$ \cite{Richter1981,Banerjee2013}. 
-Given \emph{partial} measurements of the state $\mbf{d} = P^T\mbf{u}$, the proposed method can be seen as a
-way of bootstrapping this by first attempting to reconstruct the complete
-state from the partial measurements. 
+%\subsection{Related work}
+%\subsubsection{Equation-error approach}
+%The proposed method is related to the \emph{equation-error} approach,
+%which is can be used to estimate the control variable when a \emph{complete} measurement of the state: $\mbf{d} = \mbf{u}$ 
+%is available. Given the complete state, we can simply solve the constraint equation
+%$A(\mbf{m})\mbf{u} = \mbf{q}$ for $\mbf{m}$ \cite{Richter1981,Banerjee2013}. 
+%Given \emph{partial} measurements of the state $\mbf{d} = P^T\mbf{u}$, the proposed method 
+%can be seen as a way of bootstrapping this by first attempting to reconstruct the complete
+%state from the partial measurements. 
 
-\subsubsection{Penalty methods}
-\TODO{ADMM? Penalty methods, stress that we are proposing an efficient, novel, algorithm for PDE-constrained optimization in inverse problems.}
-
-A constrained optimization problems of the form (\ref{eq:constr})
+\section{Penalty methods}
+\label{penalty}
+A constrained optimization problem of the form (\ref{eq:constr})
 can be recast as an unconstrained problem by introducing a positive penalty function $\pi$ as follows
 \bq
 \label{eq:penalty}
@@ -247,6 +268,8 @@ not become arbritarily large and this this avoids the ill-conditioning problems 
 is that the resulting unconstrained problem is no longer differentiable. 
 With large-scale applications in mind, we do not consider exact penalty methods any further in this paper.
 
+\TODO{ADMM? Penalty methods, stress that we are proposing an efficient, novel, algorithm for PDE-constrained optimization in inverse problems.}
+
 \section{A reduced penalty method}
 \label{varpro}
 Using a quadratic penalty function, the constrained problem (\ref{eq:constr}) is reformulated as
@@ -264,7 +287,7 @@ The gradient and Hessian are given by
 = 
 \left(\begin{array}{c}
 \lambda G(\mbf{m},\mbf{u})^T\left(A(\mbf{m})\mbf{u} - \mbf{q}\right)\\
-P(P^T\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^T(A(\mbf{m})\mbf{u} - \mbf{d})\\
+P(P^T\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^T(A(\mbf{m})\mbf{u} - \mbf{q})\\
 \end{array}
 \right),
 \eq
@@ -282,16 +305,16 @@ where
 \bq
 \mcl{P}_{\mbf{m},\mbf{m}} &=& \lambda (G(\mbf{m},\mbf{u})^TG(\mbf{m},\mbf{u}) + R(\mbf{m},\mbf{u},A(\mbf{m})\mbf{u}-\mbf{q})),\\
 \mcl{P}_{\mbf{u},\mbf{u}} &=&PP^T + \lambda A(\mbf{m})^TA(\mbf{m}),\\
-\mcl{P}_{\mbf{m},\mbf{u}} &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}) + A(\mbf{m})^TG(\mbf{m},\mbf{u})).\\
+\mcl{P}_{\mbf{m},\mbf{u}} &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}-\mbf{q}) + A(\mbf{m})^TG(\mbf{m},\mbf{u})).\\
 \eq
 Of course, optimization in the full $(\mbf{m},\mbf{u})$-space is not feasible for large-scale problems, so we 
-eliminate $\mbf{u}$ using a \emph{variational projection} approach \cite{Aravkin2012c} to define a reduced problem:
+eliminate $\mbf{u}$ by introducing $\mbf{u}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \mcl{P}(\mbf{m},\mbf{u})$
+and defining a reduced problem:
 \bq
 \label{eq:redpenalty}
-\min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \mcl{P}(\mbf{m},\mbf{u}_{\lambda}(\mbf{m})),
+\min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \mcl{P}(\mbf{m},\mbf{u}_{\lambda}(\mbf{m})).
 \eq
-where $\mbf{u}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \mcl{P}(\mbf{m},\mbf{u})$.
-It is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are given by 
+Following \cite[Thm. 1]{Aravkin2012c}, it is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are given by 
 \bq
 \label{eq:gradpen}
 \nabla\phi_{\lambda}(\mbf{m}) &=& \mcl{P}_{\mbf{m}}(\mbf{m},{\mbf{u}}_{\lambda}),\\
@@ -316,14 +339,16 @@ the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Alg
 \STATE{$\mathbf{g}^k_{\lambda}  = G(\mathbf{m}^k,\mathbf{u}^k_{\lambda})^*\mathbf{v}^k_{\lambda}$}
 \STATE{$H^k_{\lambda}           = \lambda G^T\left(I - A\left(A^TA + \lambda^{-1}PP^T\right)^{-1}A^T \right)G$}
 \STATE{$\mathbf{m}^{k+1}        = \mathbf{m}^k - \alpha^k \left(H_{\lambda}^{k}\right)^{-1}\mathbf{g}^k_{\lambda}$}
+\STATE{$k = k + 1$}
 \UNTIL{$\|\mbf{g}_{\lambda}^k\|_2 \leq \epsilon$}
 \end{algorithmic}
 \end{algorithm}
 
-Note that the modified system $A^*A + \lambda^{-1}PP^T$ is a low-rank update of the original PDE and
+The modified system $A^*A + \lambda^{-1}PP^T$ is a low-rank update of the original PDE and
 incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); 
 the estimate of the field is not only based on the physics and the current model, but also on the data.
-
+Note that the computation of the adjoint-state $\mathbf{v}_{\lambda}$ does \emph{not} require a PDE-solve
+in this algorithm.
 Next, we show how the states, $\mathbf{u}^k_{\lambda}$ and $\mathbf{v}^k_{\lambda}$, generated by this algorithm  
 relate to the states generated by the reduced approach and subsequently that if the algorithm successfully terminates
 the iterates satisfy $\|\nabla\mcl{L}(\mbf{m}^*, \mathbf{u}^*_{\lambda}, \mathbf{v}^*_{\lambda})\|_2 \leq \epsilon + \mcl{O}(\lambda^{-1})$.
@@ -681,9 +706,9 @@ for large-scale 3D seismic inverse problems we typically have $M = \mcl{O}(10^6)
 \begin{figure}
 \centering
 \begin{tabular}{ccc}
-\includegraphics[scale=.2]{./figs/1D_example1_a}&
-\includegraphics[scale=.2]{./figs/1D_example1_b}&
-\includegraphics[scale=.2]{./figs/1D_example1_c}\\
+%\includegraphics[scale=.2]{./figs/1D_example1_a}&
+%\includegraphics[scale=.2]{./figs/1D_example1_b}&
+%\includegraphics[scale=.2]{./figs/1D_example1_c}\\
 % \includegraphics[scale=.2]{./figs/1D_example1_d}&
 % \includegraphics[scale=.2]{./figs/1D_example1_e}&
 % \includegraphics[scale=.2]{./figs/1D_example1_f}\\
@@ -697,9 +722,9 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \begin{figure}
 \centering
 \begin{tabular}{ccc}
-\includegraphics[scale=.2]{./figs/2D_example1_a}&
-\includegraphics[scale=.2]{./figs/2D_example1_b}&
-\includegraphics[scale=.2]{./figs/2D_example1_c}\\
+%\includegraphics[scale=.2]{./figs/2D_example1_a}&
+%\includegraphics[scale=.2]{./figs/2D_example1_b}&
+%\includegraphics[scale=.2]{./figs/2D_example1_c}\\
 % \includegraphics[scale=.2]{./figs/1D_example1_d}&
 % \includegraphics[scale=.2]{./figs/1D_example1_e}&
 % \includegraphics[scale=.2]{./figs/1D_example1_f}\\
