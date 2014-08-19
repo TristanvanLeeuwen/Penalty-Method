@@ -160,42 +160,43 @@ $\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_
 The disadvantage of this approach is that it
 requires the solution of the PDEs at each update, making it computationally very expensive. 
 It also strictly enforces the constraint at each iteration, which might lead to a very
-nonlinear problem in $\mbf{m}$. To illustrate this, consider the following example.
-
-\begin{example}
-Consider the following constrained optimization problem
-\[
-\min_{m,u} \ts{\frac{1}{2}}\left(u^2 + m^2\right) \quad \mbox{s.t}. \quad  mu = 1.
-\]
-\[
-\mcl{L}(m,u,v) =  \ts{\frac{1}{2}}\left(u^2 + m^2\right) + v(mu-1)
-\]
-\[
-\nabla\mcl{L} = \left(
-\begin{array}{c}
-m + vu\\u + vm\\mu - 1\\
-\end{array}
-\right)
-\]
-\[
-\nabla^2\mcl{L} = \left(
-\begin{array}{ccc}
-1&v&u\\
-v&1&m\\
-u&m&0\\
-\end{array}
-\right),
-\]
-\[
-\phi(m) = \ts{\frac{1}{2}}\left(m^{-2} + m^2 \right).
-\]
-\[
-\nabla\phi = m - m^{-3}
-\]
-\[
-\nabla^2\phi = 1 + 33m^{-4}
-\]
-\end{example}
+nonlinear problem in $\mbf{m}$. 
+% To illustrate this, consider the following example.
+% 
+% \begin{example}
+% Consider the following constrained optimization problem
+% \[
+% \min_{m,u} \ts{\frac{1}{2}}\left(u^2 + m^2\right) \quad \mbox{s.t}. \quad  mu = 1.
+% \]
+% \[
+% \mcl{L}(m,u,v) =  \ts{\frac{1}{2}}\left(u^2 + m^2\right) + v(mu-1)
+% \]
+% \[
+% \nabla\mcl{L} = \left(
+% \begin{array}{c}
+% m + vu\\u + vm\\mu - 1\\
+% \end{array}
+% \right)
+% \]
+% \[
+% \nabla^2\mcl{L} = \left(
+% \begin{array}{ccc}
+% 1&v&u\\
+% v&1&m\\
+% u&m&0\\
+% \end{array}
+% \right),
+% \]
+% \[
+% \phi(m) = \ts{\frac{1}{2}}\left(m^{-2} + m^2 \right).
+% \]
+% \[
+% \nabla\phi = m - m^{-3}
+% \]
+% \[
+% \nabla^2\phi = 1 + 33m^{-4}
+% \]
+% \end{example}
 
 
 \subsection{Contributions and outline}
@@ -652,25 +653,18 @@ Petrobras, PGS, Total SA, WesternGeco and Woodside.
 
 \begin{table}
 \centering
-\input{./figs/1D_example1_a}
+\input{./figs/example2}
 \caption{Ratio of the condition numbers of $A^TA + \lambda P_LP_L^T$ and $A^TA$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
 and $P_L$ is a restricted identify matrix of rank $L$. }
-\label{table:1D_example1a}
+\label{table:example2}
 \end{table}
 
 \begin{table}
 \centering
-\input{./figs/2D_example1_a}
+\input{./figs/example3}
 \caption{Ratio of the condition numbers of $A^TA + \lambda P_LP_L^T$ and $A^TA$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 m + \partial_x^2$ and $P_L$ is a restricted identify matrix of rank $L$. }
-\label{table:1D_example1b}
+\label{table:example3}
 \end{table}
-
-% \begin{table}
-% \centering
-% \input{./figs/1D_example1_b}
-% \caption{Condition numbers}
-% \label{table:1D_example1b}
-% \end{table}
 
 \begin{table}
 \begin{tabular}{c|c|c|p{5cm}}
@@ -706,28 +700,22 @@ for large-scale 3D seismic inverse problems we typically have $M = \mcl{O}(10^6)
 \begin{figure}
 \centering
 \begin{tabular}{ccc}
-%\includegraphics[scale=.2]{./figs/1D_example1_a}&
-%\includegraphics[scale=.2]{./figs/1D_example1_b}&
-%\includegraphics[scale=.2]{./figs/1D_example1_c}\\
-% \includegraphics[scale=.2]{./figs/1D_example1_d}&
-% \includegraphics[scale=.2]{./figs/1D_example1_e}&
-% \includegraphics[scale=.2]{./figs/1D_example1_f}\\
+\includegraphics[scale=.2]{./figs/1D_example1_a}&
+\includegraphics[scale=.2]{./figs/1D_example1_b}&
+\includegraphics[scale=.2]{./figs/1D_example1_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
 \caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_LP_L^T$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
 and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^TA$ are also shown.}
-\label{fig:1D_example1}
+\label{fig:example2}
 \end{figure}
 
 \begin{figure}
 \centering
 \begin{tabular}{ccc}
-%\includegraphics[scale=.2]{./figs/2D_example1_a}&
-%\includegraphics[scale=.2]{./figs/2D_example1_b}&
-%\includegraphics[scale=.2]{./figs/2D_example1_c}\\
-% \includegraphics[scale=.2]{./figs/1D_example1_d}&
-% \includegraphics[scale=.2]{./figs/1D_example1_e}&
-% \includegraphics[scale=.2]{./figs/1D_example1_f}\\
+\includegraphics[scale=.2]{./figs/example2_a}&
+\includegraphics[scale=.2]{./figs/example2_b}&
+\includegraphics[scale=.2]{./figs/example2_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
 \caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_LP_L^T$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 + \partial_x^2$

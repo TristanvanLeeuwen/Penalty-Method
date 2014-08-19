@@ -2,7 +2,7 @@ A = @(m)m;
 G = @(m,u)u;
 R = 1;
 P = 1;
-d = 1;
+d = 0;
 q = 1;
 
 misfit = @(m,u).5*norm(P'*u-d)^2 + .5*norm(R*m)^2;
@@ -13,7 +13,7 @@ H = @(w)[R'*R, G(w(1),w(3)), G(w(1),w(2))'; G(w(1),w(3))' P*P' A(w(1))'; G(w(1),
 % g = @(w)[w(2)*w(3) + w(1); w(2)-2 + w(1)*w(3); w(1)*w(2)-1];
 % H = @(w)[w(1) w(3) w(2);w(3) 1 w(1);w(2) w(1) 0];
 
-w0(1) = 0.25;
+w0(1) = .5;
 w0(2) = A(w0(1))\q;
 w0(3) = A(w0(1))\(P*(d - P'*w0(2)));
 w0 = w0(:);
@@ -48,15 +48,15 @@ while (ng2(end)>1e-10)&&(k<50)
 end
 
 %% penalty
-lambda = 1;
+lambda = 1e3;
 w3  = w0;
 ng3 = norm(g(w3));
 w3(3,1) = lambda*(A(w3(1,1))*w3(2,1) - q);
 k   = 1;
-while (ng3(end)>1e-10)&&(k<50)
+while (ng3(end)>1e-10)&&(k<200)
     gk = [G(w3(1,k),w3(2,k))'*w3(3,k) + R'*R*w3(1,k);P*(P'*w3(1,k) - d) + A(w3(1,k))'*w3(3,k)];
     Hk = [lambda*G(w3(1,k),w3(2,k))'*G(w3(1,k),w3(2,k)) + R'*R ,lambda*G(w3(1,k),w3(2,k))'*A(w3(1,k)) + G(w3(1,k),w3(3,k)) ;lambda*A(w3(1,k))'*G(w3(1,k),w3(2,k)) + G(w3(1,k),w3(3,k)) ,P*P' + lambda*A(w3(1,k))'*A(w3(1,k))];
-    w3([1 2],k+1) = w3([1 2],k) - 1e-3*gk;
+    w3([1 2],k+1) = w3([1 2],k) - Hk\gk;
     w3(3,k+1) = lambda*(A(w3(1,k+1))*w3(2,k+1) - q);
     k = k + 1;
     ng3(k)  = norm(g(w3(:,k)));
