@@ -128,7 +128,7 @@ $\phi$ are given by
 \bq
 \nabla\phi(\mbf{m}) &=& G(\mbf{m},\mbf{u})^T\mbf{v},\\
 \nabla^2\phi(\mbf{m}) &=& G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}PP^TA(\mbf{m})^{-1}G(\mbf{m},\mbf{u})\nonumber\\
-&& + K(\mbf{m},\mbf{v})^TA(\mbf{m})^{-T}G(\mbf{m},\mbf{u}) + G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}K(\mbf{m},\mbf{v})\nonumber\\
+&& - K(\mbf{m},\mbf{v})^TA(\mbf{m})^{-1}G(\mbf{m},\mbf{u}) - G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}K(\mbf{m},\mbf{v})\nonumber\\
 && + R(\mbf{m},\mbf{u},\mbf{v}).
 \eq
 where $\mbf{v} = A(\mbf{m})^{-T}P\left(\mbf{d} - P^T\mbf{u}\right)$.
@@ -141,14 +141,16 @@ Algorithm \ref{alg:reduced}.
 \begin{algorithmic}
 \REQUIRE{initial guess $\mbf{m}^0$, tolerance $\epsilon$}
 \STATE{$k=0$}
-\REPEAT
-\STATE{$\mathbf{u}^k_{\mathrm{red}}  = A(\mathbf{m}^k)^{-1}\mathbf{q}$}
-\STATE{$\mathbf{v}^k_{\mathrm{red}}  = A(\mathbf{m}^k)^{-T}P(\mathbf{d} - P^T\mathbf{u}^k_{\mathrm{red}})$}
+\STATE{$\mathbf{u}^{0}_{\mathrm{red}}  = A(\mathbf{m}^{0})^{-1}\mathbf{q}$}
+\STATE{$\mathbf{v}^{0}_{\mathrm{red}}  = A(\mathbf{m}^{0})^{-T}P(\mathbf{d} - P^T\mathbf{u}^{0}_{\mathrm{red}})$}
+\WHILE{$\|\mcl{L}_{\mathbf{m}}(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}},\mbf{v}^k_{\mathrm{red}})\|_2 \geq \epsilon$}
 \STATE{$\mathbf{g}^k_{\mathrm{red}}    = G(\mathbf{m}^k,\mathbf{u}^k_{\mathrm{red}})^T\mathbf{v}^k_{\mathrm{red}}$}
 \STATE{$H^k_{\mathrm{red}} = G(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}})^TA(\mbf{m}^k)^{-T}PP^TA(\mbf{m}^k)^{-1}G(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}})$}
 \STATE{$\mathbf{m}^{k+1} =\mathbf{m}^k - \alpha^k \left(H_{\mathrm{red}}^{k}\right)^{-1}\mathbf{g}^k_{\mathrm{red}}$}
+\STATE{$\mathbf{u}^{k+1}_{\mathrm{red}}  = A(\mathbf{m}^{k+1})^{-1}\mathbf{q}$}
+\STATE{$\mathbf{v}^{k+1}_{\mathrm{red}}  = A(\mathbf{m}^{k+1})^{-T}P(\mathbf{d} - P^T\mathbf{u}^{k+1}_{\mathrm{red}})$}
 \STATE{$k = k + 1$}
-\UNTIL{$\|\mbf{g}_{\mathrm{red}} ^k\|_2 \leq \epsilon$}
+\ENDWHILE
 \end{algorithmic}
 \end{algorithm}
 Note that this corresponds to a block-elimination of the KKT system and the iterates automatically
@@ -334,14 +336,18 @@ the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Alg
 \begin{algorithmic}
 \REQUIRE{initial guess $\mbf{m}^0$, penalty parameter $\lambda$, tolerance $\epsilon$}
 \STATE{$k=0$}
-\REPEAT
-\STATE{$\mathbf{u}^k_{\lambda}  = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
-\STATE{$\mathbf{v}^k_{\lambda}  = \lambda(A(\mathbf{m}^k)\mathbf{u}^k_{\lambda} - \mathbf{q})$}
+\STATE{$\mathbf{u}^{0}_{\lambda}  = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A(\mathbf{m}^{0})^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
+\STATE{$\mathbf{v}^{0}_{\lambda}  = \lambda(A(\mathbf{m}^{0})\mathbf{u}^{0}_{\lambda} - \mathbf{q})$}
+
+\WHILE{$\|\mcl{L}_{\mathbf{m}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda})\|_2 \geq \epsilon$}
 \STATE{$\mathbf{g}^k_{\lambda}  = G(\mathbf{m}^k,\mathbf{u}^k_{\lambda})^*\mathbf{v}^k_{\lambda}$}
 \STATE{$H^k_{\lambda}           = \lambda G^T\left(I - A\left(A^TA + \lambda^{-1}PP^T\right)^{-1}A^T \right)G$}
 \STATE{$\mathbf{m}^{k+1}        = \mathbf{m}^k - \alpha^k \left(H_{\lambda}^{k}\right)^{-1}\mathbf{g}^k_{\lambda}$}
+\STATE{$\mathbf{u}^{k+1}_{\lambda}  = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A(\mathbf{m}^{k+1})^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
+\STATE{$\mathbf{v}^{k+1}_{\lambda}  = \lambda(A(\mathbf{m}^{k+1})\mathbf{u}^{k+1}_{\lambda} - \mathbf{q})$}
+
 \STATE{$k = k + 1$}
-\UNTIL{$\|\mbf{g}_{\lambda}^k\|_2 \leq \epsilon$}
+\ENDWHILE
 \end{algorithmic}
 \end{algorithm}
 
@@ -377,7 +383,7 @@ The former can be re-written as
 \[
 \mbf{u}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-T}PP^TA^{-1}\right)^{-1}\left(\mbf{q} + \lambda^{-1}A^{-T}P\mbf{d}\right).
 \]
-For $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$, we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$
+For $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$, the largest eigenvalue of $A^{-T}PP^TA^{-1}$,  we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$
 and find that
 \bq
 \mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
@@ -431,7 +437,7 @@ Finally, we find that
 \qed
 \end{proof}
 
-\section{Algorithms}
+\section{Algorithm}
 \label{algorithm}
 In this section we discuss some practicalities of the implementation of algorithm \ref{alg:penalty}. 
 We slightly elaborate the notation to explicitly 
@@ -493,13 +499,13 @@ C_N^{-1}\kappa(A^TA)\leq \kappa(A^TA + \lambda^{-1} PP^T) \leq C_1\kappa(A^TA),
 \eq
 where $C_i = \left(1 + \frac{L}{\lambda \mu_i(A^TA)}\right)$.
 
-To illustrate this, we show a few examples for a 1D elliptic PDE $\left(\imath\omega - \partial_x^2\right)u = 0$
+To illustrate this, we show a few examples for a 1D (time-harmonic) parabolic PDE $\left(\imath\omega - \partial_x^2\right)u = 0$
 and the 1D Helmholtz equation $\left(\omega^2 + \partial_x^2\right)u = 0$, both with Neumann boundary conditions. Both are discretized using
 first-order finite-differences on $x \in [0,1]$ with $N=51$ points for $\omega = 10\pi$.
 The sampling matrix $P$ consists of $L$ columns of the identity matrix (regularly sampled).
-The ratio of the condition numbers of $A^TA$ and $A^TA + \lambda^{-1}PP^T$ for the elliptic and Helmholtz equation are shown in tables \ref{table:1D_example1a} and 
-\ref{table:1D_example1b}. For these examples, the condition numnber of the augmented system is actually lower than that of the orinal system. The eigenvalues 
-are shown in figures \ref{fig:1D_example1} and \ref{fig:2D_example1}. These show that the actual eigenvalues distributions do not change significantly. We expect
+The ratio of the condition numbers of $A^TA$ and $A^TA + \lambda^{-1}PP^T$ for the parabolic and Helmholtz equation are shown in tables \ref{table:example2} and 
+\ref{table:example3}. For these examples, the condition numnber of the augmented system is actually lower than that of the orinal system. The eigenvalues 
+are shown in figures \ref{fig:example2} and \ref{fig:example3}. These show that the actual eigenvalues distributions do not change significantly. We expect
 that iterative methods will perform similarly on the augmented system as they would on the original system.
 
 When the state vector does not fit in memory, it is not so obvious how the overdetermined system should
@@ -700,9 +706,9 @@ for large-scale 3D seismic inverse problems we typically have $M = \mcl{O}(10^6)
 \begin{figure}
 \centering
 \begin{tabular}{ccc}
-\includegraphics[scale=.2]{./figs/1D_example1_a}&
-\includegraphics[scale=.2]{./figs/1D_example1_b}&
-\includegraphics[scale=.2]{./figs/1D_example1_c}\\
+\includegraphics[scale=.2]{./figs/example2_a}&
+\includegraphics[scale=.2]{./figs/example2_b}&
+\includegraphics[scale=.2]{./figs/example2_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
 \caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_LP_L^T$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
@@ -713,14 +719,14 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \begin{figure}
 \centering
 \begin{tabular}{ccc}
-\includegraphics[scale=.2]{./figs/example2_a}&
-\includegraphics[scale=.2]{./figs/example2_b}&
-\includegraphics[scale=.2]{./figs/example2_c}\\
+\includegraphics[scale=.2]{./figs/example3_a}&
+\includegraphics[scale=.2]{./figs/example3_b}&
+\includegraphics[scale=.2]{./figs/example3_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
 \caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_LP_L^T$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 + \partial_x^2$
 and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^TA$ are also shown.}
-\label{fig:2D_example1}
+\label{fig:example3}
 \end{figure}
 
 \begin{figure}

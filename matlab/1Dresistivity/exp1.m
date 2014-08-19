@@ -1,17 +1,27 @@
 %% setup
-n  = 51;
-f  = 5;
-x  = linspace(0,1,n-1);
-mt = 1 + exp(-1e1*(x-.5).^2);
-%mt = ones(n-1,1);mt(1:floor(n/2))=2;
+f    = 5;
+mfun = @(x)1 + exp(-1e1*(x-.5).^2);
 
 %% data
+n  = 201;
+x  = linspace(0,1,n-1);
+mt = mfun(x);
+
 At = getA(f,mt);
-Q  = speye(n)*(n-1);
-Q  = Q(:,[2 end-1]);
-Dt = Q'*(At\(Q));
+Qt = speye(n)*(n-1);
+Qt = Qt(:,[3 end-2]);
+Dt = Qt'*(At\(Qt));
+Dt = .5*Dt;
+
+noise = 0*randn(size(Dt));
+SNR   = 20*log10(norm(Dt(:))/norm(noise(:)))
+Dt    = Dt + noise;
 
 %% inversion
+n  = 101;
+x  = linspace(0,1,n-1);
+Q  = speye(n)*(n-1);
+Q  = Q(:,[2 end-1]);
 model.f = f;
 
 m0 = ones(n-1,1);
@@ -45,13 +55,6 @@ fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda3,model);
 
 
 %% plot
-% figure;
-% semilogy(infor(:,1),infor(:,[5]),'k--',infor(:,1),infor(:,[7]),'k-');legend('L_m','L_v');hold on;
-% semilogy(info1(:,1),info1(:,[5]),'r--',info1(:,1),info1(:,[7]),'r-');hold on
-% semilogy(info2(:,1),info2(:,[5]),'b--',info2(:,1),info2(:,[7]),'b-');hold on;
-% semilogy(info3(:,1),info3(:,[5]),'g--',info3(:,1),info3(:,[7]),'g-');
-% xlabel('iteration');ylabel('magnitude of gradient');
-
 figure;
 semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
 semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
@@ -61,7 +64,7 @@ legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','southw
 xlabel('iteration');ylabel('||\nabla L||_2');ylim([1e-10 2]);xlim([1 7])
 
 figure;
-plot(x,mt,'k--',x,mr,'k',x,m1,'r',x,m2,'b',x,m3,'g');
+plot(x,mfun(x),'k--',x,mr,'k',x,m1,'r',x,m2,'b',x,m3,'g');
 legend('true','reduced','\lambda = 0.1','\lambda = 1','\lambda = 10');
 xlabel('x');ylabel('m(x)');
 
