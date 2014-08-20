@@ -602,8 +602,9 @@ G(\mbf{m},\mbf{u}) = \mathsf{diag}(\mbf{s}')\mathsf{diag}(\mbf{u}),
 where $s'_i = \omega^2$ in the interior and $s'_i = (\omega^2 + \imath\omega/\sqrt{m_i})/2$ on the boundary.
 
 \subsubsection{Toy example.}
-The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N_1\times N_2$ points. We take $P=Q$ and the points sampled by 
-$P$ are shown in figure \ref{fig:2D_exp1a} (a). The ground-truth model $\mbf{m}^*$ is shown in figure  \ref{fig:2D_exp1a} (b). We use a single frequency
+The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N_1\times N_2$ points. We let $P$ and $Q$ be columns of the identity matrix correpsonding
+to the locations of the sources and receivers.
+The ground-truth model $\mbf{m}^*$ as well as the source and receiver locations are shown in figure  \ref{fig:2D_model}. We use a single frequency
 of $5 Hz$ (i.e., $\omega = 10\pi$).
 The data for the ground-truth model are generated using $N_1=N_2=101$ while the following experiments are done with $N_1=N_2=51$.
 
@@ -617,13 +618,16 @@ The first exhbits strong non-linearity and some local minima while for $\lambda=
 starts to behave more like the reduced misfit.
 
 For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-1}$ and  and include a regularization term 
-$\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 10^{1}$.
+$\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 5$.
 The initial parameters are $\mbf{m}^0 = \frac{1}{4}\mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
 
-The convergence plot, figure \ref{fig:2D_exp1b} (top), shows the predicted behaviour 
+The convergence history, figure \ref{fig:2D_exp1} (top, left), shows the predicted behaviour 
 of the penalty method; the norm of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$ when using the penalty method. 
+Figure \ref{fig:2D_exp1} (top, right) shows that the methods perform similarly in terms of reconstruction error.
 The resulting parameter estimates are very similar as can be seen 
-in figure \ref{fig:2D_exp1b} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}.
+in figure \ref{fig:2D_exp1} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}.
+
+Results for data with 10\% Gaussian are shown in figure  \ref{fig:2D_exp2}.
 
 \subsubsection{Example 2.}
 
@@ -766,13 +770,9 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 
 \begin{figure}
 \centering
-\begin{tabular}{cc}
-\includegraphics[scale=.4]{./figs/2D_exp1_a}&
-\includegraphics[scale=.4]{./figs/2D_exp1_b}\\
-{\small (a)}&{\small (b)}\\
-\end{tabular}
-\caption{Sampling operator, ground truth and convergence history.}
-\label{fig:2D_exp1a}
+\includegraphics[scale=.4]{./figs/2D_exp1_a}\\
+\caption{Ground truth model ($s^2/km^2$) and locations of the sources ($*$) and receivers ($\bigtriangledown$)}
+\label{fig:2D_model}
 \end{figure}
 
 \begin{figure}
@@ -808,7 +808,10 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 
 \begin{figure}
 \centering
-\includegraphics[scale=.4]{./figs/2D_exp1_c}\\
+\begin{tabular}{cc}
+\includegraphics[scale=.3]{./figs/2D_exp1_b}&
+\includegraphics[scale=.3]{./figs/2D_exp1_c}\\
+\end{tabular}
 \centering
 \begin{tabular}{cccc}
 \includegraphics[scale=.2]{./figs/2D_exp1_d}&
@@ -817,8 +820,26 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/2D_exp1_g}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
-\caption{Convergence history and reconstructions.}
-\label{fig:2D_exp1b}
+\caption{Convergence history, reconstruction error and reconstructions for data without noise.}
+\label{fig:2D_exp1}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{tabular}{cc}
+\includegraphics[scale=.3]{./figs/2D_exp2_b}&
+\includegraphics[scale=.3]{./figs/2D_exp2_c}\\
+\end{tabular}
+\centering
+\begin{tabular}{cccc}
+\includegraphics[scale=.2]{./figs/2D_exp2_d}&
+\includegraphics[scale=.2]{./figs/2D_exp2_e}&
+\includegraphics[scale=.2]{./figs/2D_exp2_f}&
+\includegraphics[scale=.2]{./figs/2D_exp2_g}\\
+{\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
+\end{tabular}
+\caption{Convergence history, reconstruction error and reconstructions for data with 10\% Gaussian noise.}
+\label{fig:2D_exp2}
 \end{figure}
 
 \clearpage
