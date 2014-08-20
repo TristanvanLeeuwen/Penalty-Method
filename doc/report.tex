@@ -280,7 +280,7 @@ Using a quadratic penalty function, the constrained problem (\ref{eq:constr}) is
 \label{eq:penalty}
 \min_{\mbf{m},\mbf{u}} \mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
 \eq
-The gradient and Hessian are given by
+The gradient and Hessian of $\mcl{P}$ are given by
 \bq
 \nabla\mcl{P} = \left(\begin{array}{c}
 \mcl{P}_{\mbf{m}}\\
@@ -328,7 +328,8 @@ Following \cite[Thm. 1]{Aravkin2012c}, it is readily verified that the gradient 
 Note that $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\mcl{P}$.
 
 The optimization problem for $\mbf{u}_{\lambda}$ has a closed-form solution and 
-the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algorithm \ref{alg:penalty}.
+the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algorithm \ref{alg:penalty}. 
+
 
 \begin{algorithm}
 \caption{Basic Gauss-Newton algorithm for find a stationary point of the Lagrangian via the penalty method}
@@ -336,14 +337,14 @@ the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Alg
 \begin{algorithmic}
 \REQUIRE{initial guess $\mbf{m}^0$, penalty parameter $\lambda$, tolerance $\epsilon$}
 \STATE{$k=0$}
-\STATE{$\mathbf{u}^{0}_{\lambda}  = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A(\mathbf{m}^{0})^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
+\STATE{$\mathbf{u}^{0}_{\lambda}  = \left(A(\mathbf{m}^{0})^TA(\mathbf{m}^{0}) + \lambda^{-1}PP^T\right)^{-1}\left(A(\mathbf{m}^{0})^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
 \STATE{$\mathbf{v}^{0}_{\lambda}  = \lambda(A(\mathbf{m}^{0})\mathbf{u}^{0}_{\lambda} - \mathbf{q})$}
 
 \WHILE{$\|\mcl{L}_{\mathbf{m}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda})\|_2 \geq \epsilon$}
-\STATE{$\mathbf{g}^k_{\lambda}  = G(\mathbf{m}^k,\mathbf{u}^k_{\lambda})^*\mathbf{v}^k_{\lambda}$}
+\STATE{$\mathbf{g}^k_{\lambda}  = G(\mathbf{m}^k,\mathbf{u}^k_{\lambda})^T\mathbf{v}^k_{\lambda}$}
 \STATE{$H^k_{\lambda}           = \lambda G^T\left(I - A\left(A^TA + \lambda^{-1}PP^T\right)^{-1}A^T \right)G$}
 \STATE{$\mathbf{m}^{k+1}        = \mathbf{m}^k - \alpha^k \left(H_{\lambda}^{k}\right)^{-1}\mathbf{g}^k_{\lambda}$}
-\STATE{$\mathbf{u}^{k+1}_{\lambda}  = \left(A^TA + \lambda^{-1}PP^T\right)^{-1}\left(A(\mathbf{m}^{k+1})^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
+\STATE{$\mathbf{u}^{k+1}_{\lambda}  = \left(A(\mathbf{m}^{k+1})^TA(\mathbf{m}^{k+1}) + \lambda^{-1}PP^T\right)^{-1}\left(A(\mathbf{m}^{k+1})^T\mbf{q} + \lambda^{-1}P^T\mbf{d}\right)$}
 \STATE{$\mathbf{v}^{k+1}_{\lambda}  = \lambda(A(\mathbf{m}^{k+1})\mathbf{u}^{k+1}_{\lambda} - \mathbf{q})$}
 
 \STATE{$k = k + 1$}
@@ -351,7 +352,7 @@ the basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Alg
 \end{algorithmic}
 \end{algorithm}
 
-The modified system $A^*A + \lambda^{-1}PP^T$ is a low-rank update of the original PDE and
+The modified system $A^TA + \lambda^{-1}PP^T$ is a low-rank update of the original PDE and
 incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); 
 the estimate of the field is not only based on the physics and the current model, but also on the data.
 Note that the computation of the adjoint-state $\mathbf{v}_{\lambda}$ does \emph{not} require a PDE-solve
@@ -478,15 +479,15 @@ small-scale applications, industry-scale applications will typically
 require (preconditioned) iterative solution of such systems. This allows
 for on-the-fly generation of the system-matrix, but still requires
 the state vector to fit in memory.
-It seems most attractive
-to work on the overdetermined system directly, rather than form the Normal equations.
-Obvious candidates are LSQR or LSMR \cite{Paige1982,Fong2011}.
+Obviously, we an apply any preconditioned iterative method that is suitable
+for solving least-squares problems, such as LSQR, LSMR or CGLS \cite{Paige1982,Fong2011,Bru2014}.
 Another promising
 candidate is a generic accelerated row-projected method described by
 \cite{Bjorck1979,Gordon2013} which proved usefull for solving PDEs
 and can be easily extended to deal with overdetermined systems \cite{Censor1983}. 
 
-The augmented system $A^TA + \lambda^{-1} PP^T$ is a rank $L$ modification of the 
+To get an idea of how such iterative methods will perform we explore some of the properties of the
+augmented system. The augmented system $A^TA + \lambda^{-1} PP^T$ is a rank $L$ modification of the 
 original system $A^TA$. It follows from \cite[Thm 8.1.8]{Golub1996} that the eigenvalues are related as
 \bq
 \mu_n(A^TA + \lambda^{-1} PP^T) = \mu_n(A^TA) + a_n \lambda^{-1}, n = 1, 2, \ldots, N
@@ -539,9 +540,9 @@ The following experiments are done in Matlab, using \texttt{slash} to solve the 
 a Gauss-Newton (GN) and a Quasi-Newton (QN) variant of the algorithms and use a weak Wolfe linesearch
 to determine the steplength. In the GN method the Hessian is inverted using 
 conjugate gradients (\texttt{pcg}) up to a relative tolerance of $\eta$. The matrix-vector products are computed on the fly.
-For the QN method we use the L-BFGS inverse Hessian with a history size of $K$. Finally, we add a regularization term
-$\frac{\alpha}{2} \|D\mbf{m}\|_2^2$, where $D$ is the first-order finite-difference matrix,  to both the reduced and penalty approaches. 
+For the QN method we use the L-BFGS inverse Hessian with a history size of $K$. 
 We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}.
+In all the examples we compute the data for the ground truth model on a finer grid than used for the inversion.
 
 The code used to perform the experiments is available from \url{github}.
 
@@ -551,17 +552,31 @@ We consider the PDE
 \partial_t u(t,x) = \partial_x\left(m(x)\partial_x\right) u(t,x),
 \eq
 on the domain $x = [0,1]$ with Neumann boundary conditions. 
-A discretization in the temporal Fourier domain gives
+A finite-difference discretization in the temporal Fourier domain gives
 \bq
 A(\mbf{m}) = \imath\omega\mathsf{diag}(\mbf{w}) + D^T\mathsf{diag}(\mbf{m})D,
 \eq
-where $\omega$ is the angular frequency, $\mbf{w} = [\frac{1}{2}; 1, \ldots, 1; \frac{1}{2}]$ and $D$ is the first-order finite-difference matrix. 
-The Jacobian is given by 
-\[G(\mbf{m},\mbf{u}) = D^T\mathsf{diag}(D\mbf{u}).
+where $\omega$ is the angular frequency, $\mbf{w} = [\frac{1}{2}; 1, \ldots, 1; \frac{1}{2}]$, $\mbf{m}$ represents 
+the medium parameter in the cell-centres and $D$ is the $N-1\times N$ finite-difference matrix
+\[
+D=\frac{1}{h}\left(\begin{array}{cccccc} 
+-1& 1&   &  &      &   \\
+  &-1& 1 &  &      &   \\
+  &  &\ddots&\ddots&   \\
+  &  &      & -1   & 1 \\
+\end{array}\right),
 \]
-The domain is discretized using $N=51$ points and we let $P = Q = [\mbf{e}_2, \mbf{e}_{N-1}](N-1)$.
-For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-3}$ and set the regularization parameter $\alpha = 10^{-6}$.
+with $h=1/(N-1)$. The Jacobian is given by 
+\[
+G(\mbf{m},\mbf{u}) = D^T\mathsf{diag}(D\mbf{u}).
+\]
+We let $P = Q = [\mbf{e}_2, \mbf{e}_{N-1}]/h$.
+The ground-truth model is $m(x) = 1+e^{-10(x-1/2)^2}$. The data are generated on a grid with $N=201$ points.
+
+For the inversion we use $N=101$ points.
+We use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-3}$ and include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 10^{-6}$.
 The initial parameters are $\mbf{m}^0 = \mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
+
 The results are shown in figure \ref{fig:1D_exp1}. The convergence plot, figure \ref{fig:1D_exp1} (a), shows the predicted behaviour of the penalty method; the norm
 of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$. The resulting parameter estimates are very similar as can be seen 
 in figure \ref{fig:1D_exp1} (b). The actual costs of the inversion are listed in table \ref{table:1D_exp1}.
@@ -569,29 +584,31 @@ in figure \ref{fig:1D_exp1} (b). The actual costs of the inversion are listed in
 \subsection{2D seismic waveform inversion}
 Consider the 2D scalar wave-equation
 \bq
-m\partial_t^2u(t,x) = \nabla^2u(t,x),
+m(x)\partial_t^2u(t,x) = \nabla^2u(t,x),
 \eq
-on $x \in \Omega \subseteq \mathbb{R}^2$  with radiation boundary conditions $\sqrt{m}\partial_tu - \partial_n u = 0$ on $\partial\Omega$.
+on $x \in \Omega \subseteq \mathbb{R}^2$  with radiation boundary conditions $\sqrt{m}(x)\partial_tu(t,x) - n(x)\cdot\nabla u(t,x) = 0$ on $\partial\Omega$
+where $n(x)$ is the outward normal vector.
+
 Discretization in the temporal Fourier domain leads to a scalar Helmholtz equation
 \bq
 A(\mbf{m}) = \mathsf{diag}(\mbf{s}) - D^TD,
 \eq
-where $D = [D_1; D_2]$ is the a finite-difference discretisation of $\nabla$ and $s_i = \omega^2 m_i$ in the interior 
-and $s_i = \omega^2 m_i/2 + \imath\omega\sqrt{m_i}/h$ on the boundary.
+where $D = [I_2\otimes D_1; D_2\otimes I_1]$ with $D_i$ the $(N_i-1)\times N_i$ finite-difference matrix, $I_i$ the $N_i\times N_i$ identity matrix
+and $s_i = \omega^2 m_i$ in the interior and $s_i = \omega^2 m_i/2 + \imath\omega\sqrt{m_i}/h$ on the boundary.
 The Jacobian is given by
 \bq
 G(\mbf{m},\mbf{u}) = \mathsf{diag}(\mbf{s}')\mathsf{diag}(\mbf{u}),
 \eq
-where $s'_i = \omega^2$ in the interior and $s'_i = \omega^2/2 + \imath\omega/(2\sqrt{m_i})$ on the boundary.
+where $s'_i = \omega^2$ in the interior and $s'_i = (\omega^2 + \imath\omega/\sqrt{m_i})/2$ on the boundary.
 
 \subsubsection{Toy example.}
-The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N=51\times 51$ points. We take $P=Q$ and the points sampled by 
-$P$ are shown in figure \ref{fig:2D_exp1a} (a). The ground truth $\mbf{m}^*$ is shown in figure  \ref{fig:2D_exp1a} (b). We use a single frequency
+The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N_1\times N_2$ points. We take $P=Q$ and the points sampled by 
+$P$ are shown in figure \ref{fig:2D_exp1a} (a). The ground-truth model $\mbf{m}^*$ is shown in figure  \ref{fig:2D_exp1a} (b). We use a single frequency
 of $5 Hz$ (i.e., $\omega = 10\pi$).
+The data for the ground-truth model are generated using $N_1=N_2=101$ while the following experiments are done with $N_1=N_2=51$.
 
 First, we investigate the sensitivity of the misfit functions $\phi$ and $\phi_{\lambda}$ by plotting $\phi(\mbf{m}^* + \delta_1 \mbf{v} + \delta_2\mbf{w})$ and
-$\phi_{\lambda}(\mbf{m}^* + \delta_1 \mbf{v}_{\lambda} + \delta_2\mbf{w}_{\lambda})$ as a function of $(\delta_1,\delta_2)$. We set $\alpha = 0$ to 
-remove any influence from the regularization on the misfit.
+$\phi_{\lambda}(\mbf{m}^* + \delta_1 \mbf{v}_{\lambda} + \delta_2\mbf{w}_{\lambda})$ as a function of $(\delta_1,\delta_2)$. 
 We take $\mbf{v}, \mbf{w}$ and $\mbf{v}_{\lambda}, \mbf{w}_{\lambda}$ to be the first two dominant eigenvector of the GN-Hessian of 
 $\phi$ and $\phi_{\lambda}$ respectively. These are shown in figure \ref{fig:2D_exp0a}. The eigenvectors for both the reduced and penalty
 approach exhibit a similar behaviour; the first is basically constant while the second is a first order diagonally oscillating model.
@@ -599,10 +616,12 @@ The misfit as a function of $(\delta_1,\delta_2)$ is shown in figure \ref{fig:2D
 The first exhbits strong non-linearity and some local minima while for $\lambda=0.1$ the misfit is much better behaved. For larger values $\lambda$ the penalty misfit
 starts to behave more like the reduced misfit.
 
-For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-1}$ and set the regularization parameter $\alpha = 10^{1}$.
+For the inversion we use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-1}$ and  and include a regularization term 
+$\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 10^{1}$.
 The initial parameters are $\mbf{m}^0 = \frac{1}{4}\mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
+
 The convergence plot, figure \ref{fig:2D_exp1b} (top), shows the predicted behaviour 
-of the penalty method; the norm of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$. 
+of the penalty method; the norm of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$ when using the penalty method. 
 The resulting parameter estimates are very similar as can be seen 
 in figure \ref{fig:2D_exp1b} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}.
 
@@ -613,7 +632,12 @@ in figure \ref{fig:2D_exp1b} (bottom). The actual costs of the inversion are lis
 \label{discussion}
 This paper lays out the basics of an efficient implementation of the
 penalty method for PDE-constrained optimization in the context . 
-
+\begin{itemize}
+\item continuation of $\lambda$
+\item approximation of reduced Hessian in penalty method
+\item GN Hessian in reduced method has rank $L$; GN Hessian in penalty method is full-rank.
+\item stopping criterion for penalty method (no use going beyond stall of gradient of Laplacian)
+\end{itemize}
 \section{Conclusions}
 \label{conclusion}
 We have presented a method for PDE-constrained optimization with linear PDEs. The main application
