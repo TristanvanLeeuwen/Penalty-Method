@@ -4,10 +4,10 @@ c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
 
-zr = [60:80:940];
-xr = 60;
-zs = [60:80:940];
-xs = 940;
+zr = [20:40:980];
+xr = 20;
+zs = [20:40:980];
+xs = 980;
 
 mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
@@ -55,7 +55,7 @@ mu = real(eigmax(@(x)A0'\(P*P'*(A0\x)),prod(n)));
 
 opts.maxit  = 20;
 opts.M      = 5;
-opts.tol    = 1e-9;
+opts.tol    = 1e-6;
 opts.lintol = 1e-1;
 opts.method = 'GN';
 

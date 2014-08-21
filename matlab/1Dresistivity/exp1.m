@@ -2,26 +2,27 @@
 f    = 5;
 mfun = @(x)1 + exp(-1e1*(x-.5).^2);
 
+alpha = 1e-6;
+sigma = 0;
 %% data
 n  = 201;
 x  = linspace(0,1,n-1);
 mt = mfun(x);
 
 At = getA(f,mt);
-Qt = speye(n)*(n-1);
-Qt = Qt(:,[3 end-2]);
+Qt = 1e1*speye(n)*sqrt(n-1);
+Qt = Qt(:,[1 end]);
 Dt = Qt'*(At\(Qt));
-Dt = .5*Dt;
 
-noise = 0*randn(size(Dt));
+noise = randn(size(Dt)); noise = sigma*norm(Dt(:))*noise/norm(noise(:));
 SNR   = 20*log10(norm(Dt(:))/norm(noise(:)))
 Dt    = Dt + noise;
 
 %% inversion
 n  = 101;
 x  = linspace(0,1,n-1);
-Q  = speye(n)*(n-1);
-Q  = Q(:,[2 end-1]);
+Q  = 1e1*speye(n)*sqrt(n-1);
+Q  = Q(:,[1 end]);
 model.f = f;
 
 m0 = ones(n-1,1);
@@ -33,8 +34,6 @@ opts.M      = 100;
 opts.tol    = 1e-9;
 opts.lintol = 1e-3;
 opts.method = 'GN';
-
-alpha = 1e-6;
 
 % reduced
 fh = @(m)phi(m,Q,Dt,alpha,model);
@@ -53,8 +52,11 @@ lambda3 = 1e1*mu;
 fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda3,model);
 [m3,info3] = QGNewton(fh,m0,opts);
 
+save('exp1');
 
 %% plot
+load('exp1');
+
 figure;
 semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
 semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;

@@ -4,15 +4,16 @@ c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
 
-zr = [60:80:940];
-xr = 60;
-zs = [60:80:940];
-xs = 940;
+zr = [20:40:980];
+xr = 20;
+zs = [20:40:980];
+xs = 980;
 
 mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
-sigma = .1;
+sigma = 0;
 alpha = 5;
+
 %% data
 n  = [101 101];
 h  = [10 10];
@@ -52,11 +53,11 @@ A0 = getA(f,m0,h,n);
 P  = getP(h,n,zr,xr);
 mu = real(eigmax(@(x)A0'\(P*P'*(A0\x)),prod(n)));
 
-opts.maxit  = 20;
-opts.M      = 5;
-opts.tol    = 1e-9;
+opts.maxit  = 200;
+opts.M      = 10;
+opts.tol    = 1e-6;
 opts.lintol = 1e-1;
-opts.method = 'GN';
+opts.method = 'lbfgs';
 
 % reduced
 fh = @(m)phi(m,Dt,alpha,model);
@@ -98,7 +99,7 @@ plot(info1(:,8),'r');hold on;
 plot(info2(:,8),'b');hold on;
 plot(info3(:,8),'g');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
-xlabel('iteration');ylabel('|m^k - m^*||_2');axis tight
+xlabel('iteration');ylabel('||m^k - m^*||_2');axis tight
 
 figure;plot2(mr);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m1);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
