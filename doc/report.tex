@@ -673,16 +673,23 @@ The initial parameters are $\mbf{m}^0 = \frac{1}{4}\mbf{1}$ and we set $\lambda$
 The results for the GN method are shown in figure \ref{fig:2D_exp1}.
 The convergence history, figure \ref{fig:2D_exp1} (top, left), shows the predicted behaviour 
 of the penalty method; the norm of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$ when using the penalty method. 
-Figure \ref{fig:2D_exp1} (top, right) shows that the methods perform similarly in terms of reconstruction error.
+Figure \ref{fig:2D_exp1} (top, right) shows that the methods perform similarly in terms of reconstruction error. 
 The resulting parameter estimates are very similar as can be seen 
 in figure \ref{fig:2D_exp1} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}.
 The penalty method converges in less iterations and uses less PDE solves per iterations.
+Note that all methods start overfitting after a few iterations. This can be countered by including more appropriate regularization or stopping the iterations early.
+The point here is to show that the penalty method gives simular results as the reduced method.
 
 The results for the QN method are shown in figure \ref{fig:2D_exp2}. The convergenge history shows the same behaviour as 
 the previous experiment. The costs of the inversion, shown in table \ref{table:2D_exp2}, are slightly less than 
 those of the GN method. As with the GN method, the penalty method converges in less iterations and uses less PDE solves per iterations.
+Again, all both penalty and reduced methods start overfitting after 20-40 iterations.
 
-Results for the QN method on data with 10\% Gaussian are shown in figure  \ref{fig:2D_exp3}.
+Results for the QN method on data with 10\% Gaussian noise are shown in figure  \ref{fig:2D_exp3}. These results show that the penalty approach yields the a very simular
+result as the reduced method for a moderate amount of noise. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. Here, the penalty method
+for $\lambda = 0.1$ starts to dramatically overfit after about 20 iterations. Again, both methods start overfitting. However, the penalty method for $\lambda=0.1$
+overfits more dramatically this time. 
+
 
 \subsubsection{Example 2.}
 
