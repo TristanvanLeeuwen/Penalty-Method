@@ -4,10 +4,10 @@ c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
 
-zr = [20:40:980];
-xr = 20;
-zs = [20:40:980];
-xs = 980;
+zr = [[20:40:980]']';
+xr = [20*ones(25,1)]';
+zs = [[20:40:980]']';
+xs = [980*ones(25,1)]';
 
 mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
@@ -101,12 +101,20 @@ plot(info3(:,8),'g');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
 xlabel('iteration');ylabel('||m^k - m^*||_2');axis tight
 
+figure;
+semilogy(infor(:,9),'k');hold on;
+semilogy(info1(:,9),'r');hold on;
+semilogy(info2(:,9),'b');hold on;
+semilogy(info3(:,9),'g');
+legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
+xlabel('iteration');ylabel('||d - P^Tu^k||_2');axis tight
+
 figure;plot2(mr);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m1);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m2);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m3);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 
-savefig(1:7,'../../doc/figs/2D_exp2');
+savefig(1:8,'../../doc/figs/2D_exp2');
 
 table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
 latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp2.tex');

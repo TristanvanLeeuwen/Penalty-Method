@@ -593,6 +593,14 @@ For the QN method we use the L-BFGS inverse Hessian with a history size of $K$.
 We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}.
 In all the examples we compute the data for the ground truth model on a finer grid than used for the inversion.
 
+In these experiments, we illustrate that the penalty method: 
+\begin{itemize}
+\item mitigates some of the linearity of the optimization problem,
+\item converges to a stationary point of the Lagrangian within the predicted tolerance of $\mcl{O}(\lambda^{-1})$, 
+\item gives practically the same result as the reduced method at a lower computational cost,
+\item is not overly sensitive to noise, altough too small a value of $\lambda$ might be problematic for high noise levels.
+\end{itemize}
+
 The code used to perform the experiments is available from \url{github}.
 
 \subsection{1D DC resistivity}
@@ -650,13 +658,15 @@ G(\mbf{m},\mbf{u}) = \mathsf{diag}(\mbf{s}')\mathsf{diag}(\mbf{u}),
 \eq
 where $s'_i = \omega^2$ in the interior and $s'_i = (\omega^2 + \imath\omega/\sqrt{m_i})/2$ on the boundary.
 
-\subsubsection{Toy example.}
-The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N_1\times N_2$ points. We let $P$ and $Q$ be columns of the identity matrix correpsonding
-to the locations of the sources and receivers.
+We let $P$ and $Q$ be columns of the identity matrix correpsonding
+to the locations of the sources and receivers respectively.
+\subsubsection{Cross-hole tomography}
+The domain $\Omega = [0,1000]\times [0,1000]$ is discretized using $N_1\times N_2$ points. 
 The ground-truth model $\mbf{m}^*$ as well as the source and receiver locations are shown in figure  \ref{fig:2D_model}. We use a single frequency
 of $5 Hz$ (i.e., $\omega = 10\pi$).
 The data for the ground-truth model are generated using $N_1=N_2=101$ while the following experiments are done with $N_1=N_2=51$.
 
+\textbf{Non-linearity:}
 First, we investigate the sensitivity of the misfit functions $\phi$ and $\phi_{\lambda}$ by plotting $\phi(\mbf{m}^* + \delta_1 \mbf{v} + \delta_2\mbf{w})$ and
 $\phi_{\lambda}(\mbf{m}^* + \delta_1 \mbf{v}_{\lambda} + \delta_2\mbf{w}_{\lambda})$ as a function of $(\delta_1,\delta_2)$. 
 We take $\mbf{v}, \mbf{w}$ and $\mbf{v}_{\lambda}, \mbf{w}_{\lambda}$ to be the first two dominant eigenvector of the GN-Hessian of 
@@ -666,7 +676,8 @@ The misfit as a function of $(\delta_1,\delta_2)$ is shown in figure \ref{fig:2D
 The first exhbits strong non-linearity and some local minima while for $\lambda=0.1$ the misfit is much better behaved. For larger values $\lambda$ the penalty misfit
 starts to behave more like the reduced misfit.
 
-For the inversion, we include a regulization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 5$ compare 
+\textbf{Inversion:}
+For the inversion, we include a regulization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 5$ and compare 
 the GN method ($\epsilon=10^{-6}$, $\eta=10^{-1}$) to the QN method ($\epsilon=10^{-6}$, $K=10$).
 The initial parameters are $\mbf{m}^0 = \frac{1}{4}\mbf{1}$ and we set $\lambda$ relative to the largest singular value of $PA(\mbf{m}^0)^{-1}$.
 
@@ -685,13 +696,13 @@ the previous experiment. The costs of the inversion, shown in table \ref{table:2
 those of the GN method. As with the GN method, the penalty method converges in less iterations and uses less PDE solves per iterations.
 Again, all both penalty and reduced methods start overfitting after 20-40 iterations.
 
+\textbf{Sensitivity to noise:}
 Results for the QN method on data with 10\% Gaussian noise are shown in figure  \ref{fig:2D_exp3}. These results show that the penalty approach yields the a very simular
-result as the reduced method for a moderate amount of noise. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. Here, the penalty method
-for $\lambda = 0.1$ starts to dramatically overfit after about 20 iterations. Again, both methods start overfitting. However, the penalty method for $\lambda=0.1$
-overfits more dramatically this time. 
+result as the reduced method for a moderate amount of noise. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. Again, both methods start overfitting. However, the penalty method for $\lambda=0.1$
+overfits more dramatically this time. This suggests that for high levels of noise, $\lambda$ should not be 
 
 
-\subsubsection{Example 2.}
+\subsubsection{Reflection tomography}
 
 
 \section{Discussion}
@@ -884,10 +895,10 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \end{tabular}
 \centering
 \begin{tabular}{cccc}
-\includegraphics[scale=.2]{./figs/2D_exp1_d}&
 \includegraphics[scale=.2]{./figs/2D_exp1_e}&
 \includegraphics[scale=.2]{./figs/2D_exp1_f}&
-\includegraphics[scale=.2]{./figs/2D_exp1_g}\\
+\includegraphics[scale=.2]{./figs/2D_exp1_g}&
+\includegraphics[scale=.2]{./figs/2D_exp1_h}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
 \caption{Convergence history, GN reconstruction error and reconstructions for data without noise.}
@@ -902,10 +913,10 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \end{tabular}
 \centering
 \begin{tabular}{cccc}
-\includegraphics[scale=.2]{./figs/2D_exp2_d}&
 \includegraphics[scale=.2]{./figs/2D_exp2_e}&
 \includegraphics[scale=.2]{./figs/2D_exp2_f}&
-\includegraphics[scale=.2]{./figs/2D_exp2_g}\\
+\includegraphics[scale=.2]{./figs/2D_exp2_g}&
+\includegraphics[scale=.2]{./figs/2D_exp2_h}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
 \caption{Convergence history, QN reconstruction error and reconstructions for data without noise.}
@@ -920,10 +931,10 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \end{tabular}
 \centering
 \begin{tabular}{cccc}
-\includegraphics[scale=.2]{./figs/2D_exp3_d}&
 \includegraphics[scale=.2]{./figs/2D_exp3_e}&
 \includegraphics[scale=.2]{./figs/2D_exp3_f}&
-\includegraphics[scale=.2]{./figs/2D_exp3_g}\\
+\includegraphics[scale=.2]{./figs/2D_exp3_g}&
+\includegraphics[scale=.2]{./figs/2D_exp3_h}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
 \caption{Convergence history, QN reconstruction error and reconstructions for data with 10\% Gaussian noise.}
@@ -938,14 +949,14 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \end{tabular}
 \centering
 \begin{tabular}{cccc}
-\includegraphics[scale=.2]{./figs/2D_exp4_d}&
 \includegraphics[scale=.2]{./figs/2D_exp4_e}&
 \includegraphics[scale=.2]{./figs/2D_exp4_f}&
-\includegraphics[scale=.2]{./figs/2D_exp4_g}\\
+\includegraphics[scale=.2]{./figs/2D_exp4_g}&
+\includegraphics[scale=.2]{./figs/2D_exp4_h}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
 \caption{Convergence history, QN reconstruction error and reconstructions for data with 20\% Gaussian noise.}
-\label{fig:2D_exp3}
+\label{fig:2D_exp4}
 \end{figure}
 
 \clearpage

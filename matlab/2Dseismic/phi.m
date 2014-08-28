@@ -49,7 +49,7 @@ g = mask.*g;
 H = @(x)Hmv(x,m,U,alpha,model);
 
 %% optimality
-opt = [norm(g),  norm(A'*V - P*(D - P'*U),'fro'), norm(A*U - Q,'fro'), norm(m-mref)];
+opt = [norm(g),  norm(A'*V - P*(D - P'*U),'fro'), norm(A*U - Q,'fro'), norm(m-mref), norm((D - P'*U),'fro')];
 
 end
 
