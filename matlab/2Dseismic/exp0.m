@@ -1,24 +1,23 @@
 %% setup
-f  = 5;
+f  = 4;
 c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
 
 
-zr = [40*ones(99,1)]';
-xr = [40:40:3960]';
-zs = [40*ones(99,1)]';
-xs = [40:40:3960]';
+zr = [[20:40:980]']';
+xr = [20*ones(25,1)]';
+zs = [[20:40:980]']';
+xs = [980*ones(25,1)]';
 
-
-mfun = @(zz,xx)1./(c0 + 1e-3*zz(:) + (c1-c0)*exp(-5e-5*(xx(:)-800).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-1200).^2 - 5e-5*(zz(:)-500).^2)).^2;
+mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
 sigma = 0;
 alpha = 0;
 delta = 10*linspace(-1,1,20);
 
 %% data
-n  = [51 101];
+n  = [51 51];
 h  = [20 20];
 z  = [0:n(1)-1]*h(1);
 x  = [0:n(2)-1]*h(2);
@@ -41,7 +40,7 @@ z  = [0:n(1)-1]*h(1);
 x  = [0:n(2)-1]*h(2);
 [zz,xx] = ndgrid(z,x);
 
-mask = ones(n); mask([1:5 end-4:end],:) = 0;mask(:,[1:5 end-4:end]) = 0;
+mask = ones(n); mask([1:1 end:end],:) = 0;mask(:,[1 end:end]) = 0;
 
 mt = mfun(zz,xx);
 
@@ -53,7 +52,7 @@ model.xr = xr;
 model.zs = zs;
 model.xs = xs;
 model.mref = mt;
-%model.mask = mask(:);
+model.mask = mask(:);
 
 m0 = ones(prod(n),1)/c0.^2;
 A0 = getA(f,m0,h,n);

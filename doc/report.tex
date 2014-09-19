@@ -45,18 +45,18 @@ the observed data. The measurement process is modelled by taking inner products 
 Throughout the paper $^T$ denotes the (complex-conjugate) transpose. The system matrix $A(\mathbf{m})$ 
 represents the discretized PDE and $\mbf{q}$ is the source function. 
 
-Oftentimes, measurements are made from multiple independent experiments
+Typically, measurements are made from multiple independent experiments,
 in which case $\mathbf{u}$ is a block vector containing the state variables for different experiments. 
-Likewise $\mathbf{q}$ and $\mathbf{d}$ are block vectors containing the right-hand-sides and observations.
+Likewise, $\mathbf{q}$ and $\mathbf{d}$ are block vectors containing the right-hand-sides and observations for all experiments.
 For some applications, such as seismic inversion, $\mbf{m}$ may represent up to $\mcl{O}(10^9)$ unknowns 
 while $\mbf{u}$ may easily represent $\mcl{O}(10^{17})$ unknowns.
 
-In practice, one usually includes an regularization term in the formulation (\ref{eq:constr}) to mitigate the ill-posedness of the problem.
-To simplify the discussion we omit such terms because they have no influence on the algorithm we propose.
+In practice, one usually includes a regularization term in the formulation (\ref{eq:constr}) to mitigate the ill-posedness
+of the problem. To simplify the discussion we omit such terms because they have no influence on the algorithm we propose.
 
 \subsection{All-at-once approach}
-A popular approach to solving
-these constrained problems is based on the corresponding Lagrangian:
+A popular approach to solving constrained problems of the form (
+ref{eq:constr}) is based on the corresponding Lagrangian:
 \bq
 \label{eq:Lagrangian}
 \mcl{L}(\mbf{m},\mbf{u},\mbf{v})=  \ts{\frac{1}{2}}||P^T\mathbf{u} - \mathbf{d}||_2^2 
@@ -106,6 +106,7 @@ In practice we are usually satisfied with satisfying the optimality conditions u
 tolerance, i.e. $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
 Such a stationary point may be found using a Newton-like method which requires repeatedly solving
 the KKT system $\nabla^{2}\mcl{L}\delta\mbf{w} = -\nabla\mcl{L}$. A basic algorithm is given in 
+Algorithm \ref{alg:allatonce}.
 
 \begin{algorithm}
 \caption{Basic Newton algorithm for find a stationary point of the Lagrangian via the all-at-once method}
@@ -135,7 +136,6 @@ the KKT system $\nabla^{2}\mcl{L}\delta\mbf{w} = -\nabla\mcl{L}$. A basic algori
 
 Many variants of Algorithm \ref{alg:allatonce} exist which may include preconditioning, inexact solves of the KKT system 
 and a linesearch to ensure global convergence.
-It is outside the scope of this manuscript to give an extensive overview of all these variants.
 
 \TODO{cite some literature on this: preconditioning, merit functions, etc. }
 
@@ -147,7 +147,8 @@ for the large-scale applications we have in mind because it involves simultaneou
 
 
 \subsection{Reduced approach}
-Instead, one usually considers a \emph{reduced} problem that is obtained by eliminating the constraints from (\ref{eq:constr}):
+Instead, one usually considers a \emph{reduced} problem that is obtained by eliminating the constraints from (\ref{eq:constr}).
+This results in an unconstrained optimization problem:
 \bq
 \min_{\mbf{m}}\phi(\mbf{m}) = \ts{\frac{1}{2}}||P^T\mbf{u}(\mbf{m}) - \mbf{d}||_2^2,
 \label{eq:redL}
@@ -163,7 +164,7 @@ $\phi$ are given by
 \nabla\phi(\mbf{m}) &=& G(\mbf{m},\mbf{u})^T\mbf{v},\\
 \nabla^2\phi(\mbf{m}) &=& G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}PP^TA(\mbf{m})^{-1}G(\mbf{m},\mbf{u})\nonumber\\
 && - K(\mbf{m},\mbf{v})^TA(\mbf{m})^{-1}G(\mbf{m},\mbf{u}) - G(\mbf{m},\mbf{u})^TA(\mbf{m})^{-T}K(\mbf{m},\mbf{v})\nonumber\\
-&& + R(\mbf{m},\mbf{u},\mbf{v}).
+&& + R(\mbf{m},\mbf{u},\mbf{v}),
 \eq
 where $\mbf{v} = A(\mbf{m})^{-T}P\left(\mbf{d} - P^T\mbf{u}\right)$.
 
@@ -196,7 +197,7 @@ $\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_
 The disadvantage of this approach is that it
 requires the solution of the PDEs at each update, making it computationally very expensive. 
 It also strictly enforces the constraint at each iteration, which might lead to a very
-nonlinear problem in $\mbf{m}$. 
+non-linear problem in $\mbf{m}$. 
 % To illustrate this, consider the following example.
 % 
 % \begin{example}
@@ -281,7 +282,8 @@ Possible extensions and open problems are discussed in section
 \section{Penalty and augmented Lagrangian methods}
 \label{penalty}
 It is impossible to do justice to the wealth of research that has been done on penalty and augmented Lagrangian methods here
-but we give a brief overview, high-lighting the main characteristics of each approach and its limitations when applied to large-scale inverse problems. 
+but we give a brief overview, high-lighting the main characteristics of a few basic approaches and their 
+limitations when applied to large-scale inverse problems. 
 
 A constrained optimization problem of the form (\ref{eq:constr})
 can be recast as an unconstrained problem by introducing a positive penalty function $\pi$ as follows
@@ -294,26 +296,26 @@ unconstrained problem will coincide with that of the constrained problem when $\
 
 A quadratic penalty function $\pi(\cdot) = \ts{\frac{1}{2}}||\cdot||_2^2$ leads to a differentiable 
 unconstrained optimization problem (\ref{eq:penalty}) whose minimizer coincides with the solution
-of the constrained optimization problem (\ref{eq:constr}) when $\lambda \uparrow \infty$ \cite[Thm. 17.1]{Nocedal}. 
+of the constrained optimization problem (\ref{eq:constr}) when $\lambda \rightarrow \infty$ \cite[Thm. 17.1]{Nocedal}. 
 Practical algorithms rely on repeatedly solving the unconstrained problem for increasing values of $\lambda$.
 A common concern with this approach is that the Hessian may become increasingly ill-conditioned 
 for large values of $\lambda$ when there are fewer constraints than variables. For PDE-constrained 
-optimization in inverse problems, there are enough constraints ($A(\mbf{m})$ is invertible) to prevent this and we will
-discuss this in more detail in section \ref{algorithm}.
+optimization in inverse problems, there are enough constraints ($A(\mbf{m})$ is invertible) to prevent this. We
+discuss this limiting case in more detail in section \ref{algorithm}.
 
 For certain non-smooth penalty functions, such as $\pi(\cdot) = ||\cdot||_1$, the minimizer of $\phi_{\lambda}$
-is a solution of the constrained problem for \emph{any} $\lambda \geq \bar{\lambda}$ for some $\bar{\lambda}$
+is a solution of the constrained problem for \emph{any} $\lambda \geq \lambda^*$ for some $\lambda^*$
 \cite[Thm. 17.3]{Nocedal}. In practice, a continuation
 strategy is used to find a suitable value for $\lambda$. An advantage of this approach is that $\lambda$ does
-not become arbritarily large and this this avoids the ill-conditioning problems mentioned above. A disadvantage
+not become arbritarily large, thus avoiding the ill-conditioning problems mentioned above. A disadvantage
 is that the resulting unconstrained problem is no longer differentiable. 
 With large-scale applications in mind, we do not consider exact penalty methods any further in this paper.
 
 Another approach that avoids having to increase $\lambda$ to infinity is the \emph{augmented Lagrangian} approach. In this approach, a quadractic penalty $\lambda\|\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}\|_2^2$ is
 added to the Lagrangian (\ref{eq:Lagrangian}). A standard approach to solve the constrained problem based on the augmented Lagrangian
-is the \emph{Alternating direction method of multipliers} (ADMM). In its most basic form it relies on minimizing the augmented Lagrangian w.r.t. $\mbf{m}$
-and $\mbf{u}$ and subsequently updating the multiplier $\mbf{v}$ and the penalty parameter $\lambda$. As such, it would still require us to store
-the multipliers, which is not feasible for the large-scale problems we have in mind.
+is the \emph{Alternating direction method of multipliers} (ADMM). In its most basic form it relies on minimizing the augmented Lagrangian w.r.t. $(\mbf{m}, \mbf{u})$
+and subsequently updating the multiplier $\mbf{v}$ and the penalty parameter $\lambda$. 
+This would require us to store the multipliers, which is not feasible for the large-scale problems we have in mind.
 
 In the next two sections we discuss an efficient algorithm for solving the constrained optimization problem (\ref{eq:constr}) based
 on a quadratic penalty formulation. This formulation is attractive because it leads to a differentiable, unconstrained, optimization problem.
@@ -360,7 +362,7 @@ where
 \eq
 Of course, optimization in the full $(\mbf{m},\mbf{u})$-space is not feasible for large-scale problems, so we 
 eliminate $\mbf{u}$ by introducing $\mbf{u}_{\lambda}(\mbf{m}) = \argmin_{\mbf{u}} \mcl{P}(\mbf{m},\mbf{u})$
-and defining a reduced problem:
+and define a reduced problem:
 \bq
 \label{eq:redpenalty}
 \min_{\mbf{m}} \phi_{\lambda}(\mbf{m}) = \mcl{P}(\mbf{m},\mbf{u}_{\lambda}(\mbf{m})).
@@ -432,7 +434,8 @@ The former can be re-written as
 \[
 \mbf{u}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-T}PP^TA^{-1}\right)^{-1}\left(\mbf{q} + \lambda^{-1}A^{-T}P\mbf{d}\right).
 \]
-For $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$, the largest eigenvalue of $A^{-T}PP^TA^{-1}$,  we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$,
+Let $mu_1$ be the largest eigenvalue of $A^{-T}PP^TA^{-1}$.
+For $\lambda>\mu_{1}$ we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$,
 and find that
 \bq
 \mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
@@ -462,7 +465,7 @@ for any $\mbf{m}$
 \mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P(P^T\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
 &=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P(P^T\mbf{u}_{\lambda} - \mbf{d}) = 0.
 \eq
-Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$ presented in Lemma \ref{lemma3}, we find
+Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\mu_{1}(A^{-T}PP^TA^{-1})$ presented in Lemma \ref{lemma}, we find
 \bq
 \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\nonumber\\
 &=& \lambda^{-1}A(\mbf{m})^{-T}P\left(\mbf{d} - P^TA(\mbf{m})^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-2}).
@@ -494,7 +497,7 @@ We slightly elaborate the notation to explicitly
 reveal the multi-experiment structure of the problem. In this case, the data are acquired in a series
 of $M$ independent experiments and $\mbf{d} = [\mbf{d}_1; \ldots; \mbf{d}_{M}]$ is a block-vector. We 
 partition the states and sources in a simular manner and, since the experiments are independent, 
-the system matrix $A$ is block-diagonal matrix with $N\times N$ blocks $A_i(\mbf{m})$. 
+the system matrix $A$ is block-diagonal matrix with $M$ blocks $A_i(\mbf{m})$ of size $N\times N$. 
 Assuming we take $L$ independent measurements for each experiment, the matrix $P$ has rank $L$.
 
 \subsection{Solving the augmented PDE}
@@ -566,7 +569,7 @@ compute the gradient.
 For the penalty method, the augmented system $A^TA + PP^T$ will have a banded structure and its solution would require storage of the full time-history.
 So even in this setting it seems possible to apply the penalty method at roughly the same complexity as the reduced method.
 
-\subsection{Gradient and Hessian}
+\subsection{Gradient and Hessian computation}
 Given these solutions $\mbf{u}_i$, the gradient, $\mbf{g}_{\lambda}$ and Gauss-Newton Hessian $H_{\lambda}$ of $\phi_{\lambda}$ 
 are given by (cf eq. \ref{eq:gradpen}-\ref{eq:hesspen})
 \bq
