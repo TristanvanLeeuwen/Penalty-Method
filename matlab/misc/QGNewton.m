@@ -46,8 +46,8 @@ lambda    = 1;
 [f,g,H,opt]  = fh(x);
 nfeval = 1;
 info   = [iter,nfeval,lambda,f,opt];
-fprintf(fid,'# iter, # eval, stepsize, f(x)       , ||L_m||_2,    ||L_u||_2,     ||L_v||_2,   ||m-m_r||_2\n');
-formatstr = '%6d, %6d, %1.2e, %1.5e, %1.5e, %1.5e, %1.5e, %1.5e\n';
+fprintf(fid,'# iter, # eval, stepsize, f(x)       , ||L_m||_2,    ||L_u||_2,     ||L_v||_2,   ||m-m_r||_2,  ||Pu - d||_2\n');
+formatstr = '%6d, %6d, %1.2e, %1.5e, %1.5e, %1.5e, %1.5e, %1.5e, %1.5e\n';
 fprintf(fid,formatstr,info);
 if write
     dlmwrite(['x_' num2str(iter) '.dat'],x);
