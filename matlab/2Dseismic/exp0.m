@@ -1,20 +1,21 @@
 %% setup
-f  = 10;
+f  = 5;
 c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
 
-
-zr = [[20:20:980]']';
-xr = [20*ones(49,1)]';
-zs = [[20:20:980]']';
-xs = [980*ones(49,1)]';
+xt = 500 + 490*cos(linspace(0,2*pi,41));
+zt = 500 + 490*sin(linspace(0,2*pi,41));
+zr = xt(1:2:end);
+xr = zt(1:2:end);
+zs = xt(2:2:end);
+xs = zt(2:2:end);
 
 mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
 sigma = 0;
 alpha = 0;
-delta = 10*linspace(-1,1,20);
+delta = 10*linspace(-1,1,50);
 
 %% data
 n  = [51 51];
@@ -61,11 +62,9 @@ mu = real(eigmax(@(x)A0'\(P*P'*(A0\x)),prod(n)));
 
 opts.isreal = 1;
 
-%v1 = sin(pi*zz(:)/1000); v1 = v1/norm(v1);
-%v2 = sin(2*pi*zz(:)/1000);  v2 = v2/norm(v2);
-v1 = 1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2)).^2 - m0;
-v2 = 1./(c0 + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2 - m0;
-
+v1 = sin(pi*zz(:)/1000); v1 = v1/norm(v1);
+v2 = cos(pi*xx(:)/1000); v2 = v2/norm(v2);
+ 
 % reduced
 [fr0,gr,Hr] = phi(m0,Dt,alpha,model);
 %[Vr,Dr,flagr] = eigs(Hr,N,6,'LM',opts); [Dr,Ir] = sort(diag(Dr),'descend'); Vr = Vr(:,Ir);
@@ -78,9 +77,9 @@ for k = 1:length(delta)
 end
 
 % penalty
-lambda1 = 1e-1*mu;
+lambda1 = 1e-2*mu;
 lambda2 = 1e-0*mu;
-lambda3 = 1e1*mu;
+lambda3 = 1e2*mu;
 
 [fp10,gp1,Hp1] = phi_lambda(m0,Dt,alpha,lambda1,model);  
 %[Vp1,Dp1,flag1] = eigs(Hp1,N,6,'LM',opts); [Dp1,Ip1] = sort(diag(Dp1),'descend'); Vp1 = Vp1(:,Ip1);
@@ -134,4 +133,4 @@ figure;contourf(delta,delta,fp2,20);xlabel('\delta_2');ylabel('\delta_1');
 figure;contourf(delta,delta,fp3,20);xlabel('\delta_2');ylabel('\delta_1');
 
 
-%savefig(1:12,'../../doc/figs/2D_exp0');
+savefig(1:12,'../../doc/figs/2D_exp0');

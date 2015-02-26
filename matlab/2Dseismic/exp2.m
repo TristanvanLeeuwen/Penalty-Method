@@ -4,15 +4,21 @@ c0 = 2;
 c1 = 2.5;
 c2 = 2.25;
 
-zr = [[20:40:980]']';
-xr = [20*ones(25,1)]';
-zs = [[20:40:980]']';
-xs = [980*ones(25,1)]';
+% zr = [[20:40:980]']';
+% xr = [20*ones(25,1)]';
+% zs = [[20:40:980]']';
+% xs = [980*ones(25,1)]';
+xt = 500 + 490*cos(linspace(0,2*pi,41));
+zt = 500 + 490*sin(linspace(0,2*pi,41));
+zr = xt(1:2:end);
+xr = zt(1:2:end);
+zs = xt(2:2:end);
+xs = zt(2:2:end);
 
 mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
 sigma = 0;
-alpha = 5;
+alpha = 2;
 
 %% data
 n  = [101 101];
@@ -81,7 +87,7 @@ save('exp2');
 %% plot
 load('exp2');
 
-plot2 = @(m)imagesc(x,z,reshape(m,n),[0.15 0.3]);
+plot2 = @(m)imagesc(1e-3*x,1e-3*z,reshape(1./real(sqrt(m)),n),[1.5 2.5]);
 
 figure;plot2(mref);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');colorbar;hold on; plot(xs,zs,'k*',xr,zr,'kv','markersize',10,'linewidth',2)
 
