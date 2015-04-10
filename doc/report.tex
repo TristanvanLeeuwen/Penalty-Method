@@ -10,7 +10,7 @@ $^2$ Dept. of Earth, Ocean and Atmospheric Sciences, University of British Colum
 \ead{T.vanLeeuwen@uu.nl}
 
 \begin{abstract}
-Many inverse and parameter estimation problems can be written as PDE-constrained optimization problems. The goal, then, is to infer the parameters, typically coefficients of the PDE, from partial measurements of the solutions of the PDE for several right-hand-sides. Such PDE-constrained problems can be solved by finding a stationary point of the Lagrangian, which entails simultaneously updating the paramaters and the (adjoint) state variables. For large-scale problems, such an \emph{all-at-once} approach is not feasible as it requires storing all the state variables. In this case one usually resorts to a \emph{reduced} approach where the constraints are explicitly eliminated (at each iteration) by solving the PDEs. These two approaches, and variations thereof, are the main workhorses for solving PDE-constrained optimization problems arising from inverse problems. In this paper, we present an alternative method that aims to combine the advantages of both approaches. Our method is based on a quadratic penalty formulation of the constrained optimization problem. By eliminating the state variable, we develop an efficient algorithm that has roughly the same computational complexity as the conventional \emph{reduced} approach while exploiting a larger search space. Numerical results show that this method indeed reduces some of the non-linearity of the problem and is less sensitive the initial iterate.
+Many inverse and parameter estimation problems can be written as PDE-constrained optimization problems. The goal, then, is to infer the parameters, typically coefficients of the PDE, from partial measurements of the solutions of the PDE for several right-hand-sides. Such PDE-constrained problems can be solved by finding a stationary point of the Lagrangian, which entails simultaneously updating the parameters and the (adjoint) state variables. For large-scale problems, such an \emph{all-at-once} approach is not feasible as it requires storing all the state variables. In this case one usually resorts to a \emph{reduced} approach where the constraints are explicitly eliminated (at each iteration) by solving the PDEs. These two approaches, and variations thereof, are the main workhorses for solving PDE-constrained optimization problems arising from inverse problems. In this paper, we present an alternative method that aims to combine the advantages of both approaches. Our method is based on a quadratic penalty formulation of the constrained optimization problem. By eliminating the state variable, we develop an efficient algorithm that has roughly the same computational complexity as the conventional \emph{reduced} approach while exploiting a larger search space. Numerical results show that this method indeed reduces some of the non-linearity of the problem and is less sensitive the initial iterate.
 \end{abstract}
 
 \maketitle
@@ -315,7 +315,7 @@ A basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algor
 \vspace{1mm}
 \STATE{$\mathbf{g}^k_{\lambda}  = G(\mathbf{m}^k,\mathbf{u}^k_{\lambda})^T\mathbf{v}^k_{\lambda}$}
 \vspace{2mm}
-\STATE{$H^k_{\lambda}           = \lambda G^T\left(I - A\left(A^TA + \lambda^{-1}P^T\!P\right)^{-1}A^T \right)G$}
+\STATE{$H^k_{\lambda}           = \lambda G^T\left(I - A\left(A^T\!A + \lambda^{-1}P^T\!P\right)^{-1}A^T \right)G$}
 \vspace{1mm}
 \STATE{determine steplength $\alpha^k \in (0,1]$}
 \vspace{1mm}
@@ -455,11 +455,11 @@ To get an idea of how such iterative methods will perform we explore some of the
 \eq
 where $\mu_1(B) > \mu_2(B) > \ldots > \mu_{N}(B)$ denote the eigenvalues of $B$ and the coefficients $a_n$ satisfy $\sum_{n=1}^{N} a_n = L$. This means that at worst, 1 eigenvalue is shifted by $L\lambda^{-1}$ while at best, all the eigenvalues are shifted by $LN^{-1}\lambda^{-1}$. For the condition numbers $\kappa(B) = \mu_1(B)/\mu_N(b)$ we find
 \bq
-C_N^{-1}\kappa(A^TA)\leq \kappa(A^TA + \lambda^{-1} P^T\!P) \leq C_1\kappa(A^TA),
+C_N^{-1}\kappa(A^T\!A)\leq \kappa(A^T\!A + \lambda^{-1} P^T\!P) \leq C_1\kappa(A^T\!A),
 \eq
 where $C_i = \left(1 + \frac{L}{\lambda \mu_i(A^T\!A)}\right)$.
 
-To illustrate this, we show a few examples for a 1D (time-harmonic) parabolic PDE $\left(\imath\omega - \partial_x^2\right)u = 0$ and the 1D Helmholtz equation $\left(\omega^2 + \partial_x^2\right)u = 0$, both with Neumann boundary conditions. Both are discretized using first-order finite-differences on $x \in [0,1]$ with $N=51$ points for $\omega = 10\pi$. The sampling matrix $P$ consists of $L$ columns of the identity matrix (regularly sampled). The ratio of the condition numbers of $A^TA$ and $A^TA + \lambda^{-1}P^T\!P$ for the parabolic and Helmholtz equation are shown in tables \ref{table:example2} and \ref{table:example3}. For these examples, the condition number of the augmented system is actually lower than that of the original system. The eigenvalues 
+To illustrate this, we show a few examples for a 1D (time-harmonic) parabolic PDE $\left(\imath\omega - \partial_x^2\right)u = 0$ and the 1D Helmholtz equation $\left(\omega^2 + \partial_x^2\right)u = 0$, both with Neumann boundary conditions. Both are discretized using first-order finite-differences on $x \in [0,1]$ with $N=51$ points for $\omega = 10\pi$. The sampling matrix $P$ consists of $L$ columns of the identity matrix (regularly sampled). The ratio of the condition numbers of $A^T\!A$ and $A^T\!A + \lambda^{-1}P^T\!P$ for the parabolic and Helmholtz equation are shown in tables \ref{table:example2} and \ref{table:example3}. For these examples, the condition number of the augmented system is actually lower than that of the original system. The eigenvalues 
 are shown in figures \ref{fig:example2} and \ref{fig:example3}. These show that the actual eigenvalues distributions do not change significantly. We expect
 that iterative methods will perform similarly on the augmented system as they would on the original system. \emph{How} to effectively precondition the augmented system given a good preconditioner for the original system is a different matter which is outside the scope of this paper.
 
@@ -639,7 +639,7 @@ $N$	&   $10^3$  & $10^6$	&	$10^9$			\\
 \begin{table}
 \centering
 \input{./figs/example2}
-\caption{Ratio of the condition numbers of $A^TA + \lambda P_LP_L^T$ and $A^TA$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
+\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
 and $P_L$ is a restricted identify matrix of rank $L$. }
 \label{table:example2}
 \end{table}
@@ -647,7 +647,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. }
 \begin{table}
 \centering
 \input{./figs/example3}
-\caption{Ratio of the condition numbers of $A^TA + \lambda P_LP_L^T$ and $A^TA$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 m + \partial_x^2$ and $P_L$ is a restricted identify matrix of rank $L$. }
+\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 m + \partial_x^2$ and $P_L$ is a restricted identify matrix of rank $L$. }
 \label{table:example3}
 \end{table}
 
@@ -695,8 +695,8 @@ all-at-once&   0   &    $2KN + M$   &  solve sparse symmetric, possibly indefini
 \includegraphics[scale=.2]{./figs/example2_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
-\caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_L^T\^P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
-and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^TA$ are also shown.}
+\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
+and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
 \label{fig:example2}
 \end{figure}
 
@@ -708,8 +708,8 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/example3_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
-\caption{Eigenvalues of the augmented system,  $A^TA + \lambda P_L^T\^P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 + \partial_x^2$
-and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^TA$ are also shown.}
+\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 + \partial_x^2$
+and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
 \label{fig:example3}
 \end{figure}
 
