@@ -1,0 +1,81 @@
+\documentclass[12pt]{article} 
+\usepackage{amsfonts} 
+
+\begin{document} 
+\title{A penalty method for PDE-constrained optimization in inverse problems (review)} 
+\author{T. van Leeuwen and F.J. Herrmann} 
+\date{} 
+\maketitle 
+\clearpage
+\section{referee 1}
+The new/updated manuscript is well structured and well written. The authors explain the proposed method clearly and demonstrate the algorithm using several well-chosen model problems. Here are my comments: 
+
+\begin{itemize}
+\item I suggest the authors discuss any relevant research (if applicable) to the proposed method. 
+
+\item Add a (separate) subsection on the computational cost of the method and show that it's scalable, hence indeed feasible for large-scale problems. 
+
+\item Give a more complete list of references for the full space and reduced space methods. 
+
+\item Please run check for both typos and writing errors, see for instance in the abstract missing "to" before the initial iterate. 
+\end{itemize}
+\clearpage
+\section{referee 2}
+The standard approach to solve inverse problems is based on a Lagrangian formulation. The computation of the numerical solution with a Newton method involves the 
+KKT system without needing to solve explicitly the PDEs. This all-at-once approach is often unfeasible for large-scale applications because it involves the updating and hence the storing of all the variables, i.e. all state variables corresponding to the $K$ experiments and parameters simultaneously. A typical size for $K$ in industrial applications is $10^6$. 
+
+Alternatively, one can use a the reduced method. 
+This reduces the storage considerably since the state variables do not need to be stored simultaneously for all $K$ experiments. 
+The trade-off is that many PDE-solves are required at each iteration. 
+The authors also argue that the reduced approach, by enforcing the constraint at each iteration, reduces the search space , making it more difficult to find an appropriate minimizer. 
+
+The authors propose an alternative, ``hybrid'' approach, where a penalty term is added to the objective functional to approximate the constraint (usually a PDE). 
+The solution of the penalized problem should converge to the solution of the original problem as $\lambda$ (the penalization parameter) converges to $0$. 
+This penalization is standard in optimization, but in this paper in addition the state variable $u$ is eliminated, in a similar way as in the reduced approach, except that the state variable $u=u_\lambda$ depends of course on $\lambda$. Therefore the reduced cost function $\phi_\lambda(m)$ also depends on $\lambda$. The state variable $u_\lambda$ actually has a closed form and consequently $\phi_\lambda(m)$ also has a closed form. The state variable $u_\lambda$ depends not only on the PDE but also on the data, which is an important difference with the usual reduced approach. 
+
+The main idea of the paper is interesting but it is not clear that the benefits surpass the drawbacks. The problem is that the drawbacks can be seen clearly while the benefits of the approach are hypothetical. They are supported by some numerical evidence but there is no mathematical evidence.
+
+In what follow I will denote the author's approach "reduced-penalized approach". 
+
+The main arguments for the benefits of the method developped by the authors are 
+\begin{enumerate} 
+\item The reduced-penalized approach has a similar computational complexity as the reduced approach. 
+\item It retains some of the characteristics of the all-at-once approach in the sense that it exploits a larger search space compared to the reduced approach. 
+\item The reduced-penalized approach is less nonlinear than the reduced approach. 
+\end{enumerate} 
+% 
+However the corresponding drawbacks are as follows: 
+\begin{enumerate} 
+\item The reduced-penalized approach has a similar computational complexity as the reduced approach {\it for a fixed parameter $\lambda$}. As the authors wrote on page 15, for such approach usually one needs to develop a continuation strategy to let $\lambda\to\infty$, but this might increase the computational complexity a lot. Ideally a path-following method should be developped to control the convergence $\lambda\to\infty$, which also would allow to measure the complexity. Therefore the argument that the reduced-penalized approach has a similar complexity as the reduced approach is not so clear. The reduced-penalized approach is also more complicated to implement. 
+\item I am not sure that the main issue is to explore a larger search space, I would say that the main advantage of the penalization is to render the problem more convex, but maybe this is the same. Again here, the problem is that a continuation method should be performed, and for large $\lambda$ the problem will be close to the standard reduced approach. This can be seen for instance in Figure 6 for $\lambda=10$ already. Of course in a continuation method, one will start closer to the minimum for large $\lambda$, but the trade-off is of course the complexity. 
+\item The fact that the reduced-penalized approach is less nonlinear than the reduced approach is closely related to the convexity of the problem, see my comments in the previous item. 
+\end{enumerate} 
+
+In my opinion this is the major problem of this approach, that it is not clear how to choose $\lambda$, and that the only way to solve the problem is to do a continuation strategy for $\lambda$, ideally a path-following method. In their numerical results, the authors obtain good reconstructions for several values of $\lambda$ even when $\lambda$ is quite small (typically $\lambda=0.1,1$ and $10$). This seems surprising since one would expect a good reconstruction for a large $\lambda$ only, indeed, how can the solution of the PDE be close to the original problem with such small value of $\lambda$? Maybe this is something specific for inverse problems. In fact, looking for instance at the graphs for $\|m^k - m^*\|_2$ in Figures 8,9,10, one observes that the minimum of $\|m^k - m^*\|_2$ is roughly the same for all values of $\lambda$ and for the reduced approach, so my guess is that $\lambda$ in fact does not need to converge to infinity, i.e. the PDE does not need to be solved to full accuracy because of the ill-posedness of the problem. However this would require a rigorous mathematical analysis: the error should be splitted in approximation error and data error, and then one could see what is the influence of $\lambda$ on this two errors. It would maybe be clear then that it is useless to drive $\lambda\to\infty$. If this is really the case, then this approach could indeed be quite interesting for inverse problems. 
+
+
+Therefore my feeling is that the benefits of the method are put into the spotlight while the drawbacks are hidden in this paper, although the authors discuss them briefly towards the end of the paper. I think that the idea has a good potential, but there should be more mathematical analysis of the method or at least a more precise discussion of the drawbacks of the method to have a fair comparison with other methods. Indeed the method really seems at first much more expensive than the reduced approach for some very hypothetical benefits. 
+
+Also, it seems that the method has been already introduced and discuss in other papers from the authors [13] (also [18]), so since there is almost no mathematical analysis of the problem in the present paper, what is the added value compared to [13,18]? 
+Therefore I would recommand at least a major revision. There is also a list of comments and typos below: 
+\begin{itemize} 
+\item Page 1, line 34: "to" is missing 
+\item Page 2, line 52: "in stead" 
+\item Page 4: line 6: "algorihtm" 
+\item Page 5, line 5 "to find" or "for finding" 
+\item Page 5, I assume $u_{red}$ is for "reduced", but I don't think there is any definition? 
+\item Page 6, line 50: please remind the reader what $\phi_\lambda$ is. 
+\item Up to page 7, there are mainly reminders, so that is a consequent part of the paper. It is useful of course for a large audience and the paper is well-written, but for instance, is the beginning of section 2 and 2.1 really useful since it is not used at all in the paper? I think this is quite standard. I would shorten the content from page 1 to page 7. 
+\item Page 9, line 9: there are two times $\mu_1$. 
+\item Page 9, line 27, a dot is missing. Also, in the first sentence of Theorem 4.2., I think $\mathcal L_u$ and $\mathcal L_v$ are exchanged. 
+\item Page 10, line 12: "simular" 
+\item Page 11, section 5.3.: This discussion is not really fair, since the solution of the reduced-penalized approach needs to be computed for several values of $\lambda$. Unless there is a strong argument for solving the problem only with one value of $\lambda$, but even so, for what value? So I think this discussion should be modified accordingly. 
+\item Page 13, line 26: "is samples". Page 40: "exhbits". 
+\item Page 14: what means first initial iterate and second initial iterate exactly? The explanation in section 6.2.2. are a bit confusing. Why figure 13 is not mentionned? 
+\item Page 15, line 16: "to by" and do you mean "increasing $\lambda$"? 
+\item Page 15, line 35: The argument "explores a larger search space" seems really weak. What does this mean exactly and how can one verify such a thing? The number of iteration being roughly the same, I don't see how more space would be explored. The fact that the functional is maybe "more convex" could be a more satisfying explanation, although very vague too. 
+\item Page 15, line 38: "we can suffice" 
+\end{itemize} 
+
+
+\end{document} 
