@@ -64,7 +64,7 @@ while ~converged
                 s = -g/norm(g);
             end
         otherwise
-            [s,~,~,ncg] = pcg(H,-g,lintol,50);
+            [s,~,~,ncg] = pcg(H,-g,lintol,100);
             nfeval = nfeval + ncg;
     end
     p = -(s'*g)/(g'*g);

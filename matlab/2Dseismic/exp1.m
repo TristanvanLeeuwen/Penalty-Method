@@ -14,11 +14,7 @@ xs = zt(2:2:end);
 mfun = @(zz,xx)1./(c0 + (c1-c0)*exp(-5e-5*(xx(:)-300).^2 - 5e-5*(zz(:)-300).^2) + (c2-c0)*exp(-5e-5*(xx(:)-700).^2 - 5e-5*(zz(:)-700).^2)).^2;
 
 sigma = 0;
-<<<<<<< HEAD
-alpha = 1;
-=======
 alpha = 2;
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
 
 %% data
 n  = [101 101];
@@ -87,15 +83,9 @@ save('exp1');
 %% plot
 load('exp1');
 
-<<<<<<< HEAD
-plot2 = @(m)imagesc(1e-3*x,1e-3*z,reshape(1./real(sqrt(m)),n),[1.5 2.5]);
-
-figure;plot2(mref);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');colorbar;hold on; plot(xs,zs,'k*',xr,zr,'kv','markersize',10,'linewidth',2)
-=======
 plot2 = @(m)imagesc(1e-3*x,1e-3*z,reshape(m,n),[.1 .3]);
 
 figure;plot2(mref);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');colorbar;hold on; plot(1e-3*xs,1e-3*zs,'k*',1e-3*xr,1e-3*zr,'kv','markersize',10,'linewidth',2)
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
 
 figure;
 semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
@@ -103,11 +93,7 @@ semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
 semilogy(sqrt(sum(info2(:,[5,6,7]).^2,2)),'b');hold on;
 semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
-<<<<<<< HEAD
-xlabel('iteration');ylabel('||\nabla L||_2');axis tight
-=======
 xlabel('iteration');ylabel('||\nabla L||_2');axis square tight;ylim([1e-6 1]);
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
 
 figure;
 plot(infor(:,8),'k');hold on;
@@ -115,11 +101,7 @@ plot(info1(:,8),'r');hold on;
 plot(info2(:,8),'b');hold on;
 plot(info3(:,8),'g');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
-<<<<<<< HEAD
-xlabel('iteration');ylabel('||m^k - m^*||_2');axis tight
-=======
 xlabel('iteration');ylabel('||m^k - m^*||_2');axis square tight;ylim([0 1]);
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
 
 figure;
 semilogy(infor(:,9),'k');hold on;
@@ -127,9 +109,6 @@ semilogy(info1(:,9),'r');hold on;
 semilogy(info2(:,9),'b');hold on;
 semilogy(info3(:,9),'g');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
-<<<<<<< HEAD
-xlabel('iteration');ylabel('||d - P^Tu^k||_2');axis tight
-=======
 xlabel('iteration');ylabel('||P^Tu^k - d||_2');axis square tight;ylim([1e-3 1]);
 
 figure;
@@ -139,18 +118,13 @@ plot(info2(:,9),info2(:,7),'b-o');hold on;
 plot(info3(:,9),info3(:,7),'g-o');
 legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','northeast');
 ylabel('||A(m)u^k - d||_2');xlabel('||P^Tu^k - d||_2');axis square tight;ylim([-1e-4 4e-3]);xlim([0 0.5])
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
 
 figure;plot2(mr);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m1);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m2);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 figure;plot2(m3);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');
 
-<<<<<<< HEAD
-savefig(1:8,'../../doc/figs/2D_exp1');
-=======
 savefig(1:9,'../../doc/figs/2D_exp1');
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
 
 table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
 latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/2D_exp1.tex');

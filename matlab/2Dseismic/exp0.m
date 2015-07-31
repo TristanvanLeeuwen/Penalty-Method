@@ -127,17 +127,9 @@ figure;plot2(Vp1(:,2));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxi
 figure;plot2(Vp2(:,2));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxis([-.07 .07])
 figure;plot2(Vp3(:,2));axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');caxis([-.07 .07])
 
-<<<<<<< HEAD
-figure;contourf(delta,delta,fr,20);xlabel('\delta_2');ylabel('\delta_1');
-figure;contourf(delta,delta,fp1,20);xlabel('\delta_2');ylabel('\delta_1');
-figure;contourf(delta,delta,fp2,20);xlabel('\delta_2');ylabel('\delta_1');
-figure;contourf(delta,delta,fp3,20);xlabel('\delta_2');ylabel('\delta_1');
-=======
 figure;contourf(delta,delta,fr,20);xlabel('\delta_2');ylabel('\delta_1'); axis equal tight
 figure;contourf(delta,delta,fp1,20);xlabel('\delta_2');ylabel('\delta_1'); axis equal tight
 figure;contourf(delta,delta,fp2,20);xlabel('\delta_2');ylabel('\delta_1'); axis equal tight
 figure;contourf(delta,delta,fp3,20);xlabel('\delta_2');ylabel('\delta_1'); axis equal tight
->>>>>>> 974eda33f8b9fd9dbd5936f04816a0e1415a2ab6
-
 
 savefig(1:12,'../../doc/figs/2D_exp0');
