@@ -1,5 +1,5 @@
 %% setup
-v = dlmread('../../data/overthrust_25.dat');
+v = dlmread('overthrust_25.dat');
 v = 1e-3*v(1:2:end,1:2:end);
 dx = 50;
 f  = 2;
@@ -30,7 +30,7 @@ SNR   = 20*log10(norm(Dt(:))/norm(noise(:)))
 Dt    = Dt + noise;
 
 %% inversion
-v = dlmread('../../data/overthrust_25.dat');
+v = dlmread('overthrust_25.dat');
 v = 1e-3*v(1:4:end,1:4:end);
 dx = 100;
 
