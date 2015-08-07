@@ -16,7 +16,7 @@ h = 1/(n-1);
 omega = 2*pi*f;
 
 D = spdiags(ones(n,1)*[-1 1]/h,[0:1],n-1,n);
-w = ones(n,1); w([1 end]) = 0.5;
+w = ones(n,1); w([1 end]) = 0;
 A = 1i*omega*diags(w) + D'*diags(m)*D;
 
 

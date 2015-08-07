@@ -85,7 +85,7 @@ load('exp3');
 
 plot2 = @(m)imagesc(1e-3*x,1e-3*z,reshape(m,n),[.1 .3]);
 
-figure;plot2(mref);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');colorbar;hold on; plot(xs,zs,'k*',xr,zr,'kv','markersize',10,'linewidth',2)
+figure;plot2(mref);axis equal tight;ylabel('x_1 [m]');xlabel('x_2 [m]');colorbar;hold on; plot(1e-3*xs,1e-3*zs,'k*',1e-3*xr,1e-3*zr,'kv','markersize',10,'linewidth',2)
 
 figure;
 semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
