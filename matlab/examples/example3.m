@@ -3,17 +3,10 @@ n  = 51;
 f  = 5;
 x  = linspace(0,1,n);
 h  = x(2) - x(1);
-%mt = 1 + exp(-1e1*(x(:)-.5).^2);
 mt = ones(n,1)./1.^2;
-%mt = ones(n-1,1);mt(1:floor(n/2))=2;
 
 %% get matrix
 omega = 2*pi*f;
-% S = spdiags(ones(n(1),1)*[1 -2 1]/h(1).^2,[-1:1],n(1),n(1)); %S(1,1:2) = [1 -1]/h(1); S(end,end-1:end) = [-1 1]/h(1);
-% a = ones(n,1); a([1 end]) = 0;
-% b = 1-a;
-% M = omega^2*spdiags(a.*mt,0,n,n) + 0*1i*omega*spdiags(b.*sqrt(mt),0,n,n);
-% At = M+S;
 
 D  = spdiags(ones(n,1)*[-1 1]/h,[0:1],n-1,n);
 w  = ones(n,1); w([1 end]) = 0.5;

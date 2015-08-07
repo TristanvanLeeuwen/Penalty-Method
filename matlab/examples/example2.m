@@ -3,9 +3,7 @@ n  = 51;
 f  = 5;
 x  = linspace(0,1,n-1);
 h  = x(2) - x(1);
-%mt = 1 + exp(-1e1*(x-.5).^2);
 mt = ones(n-1,1);
-%mt = ones(n-1,1);mt(1:floor(n/2))=2;
 omega = 2*pi*f;
 
 D  = spdiags(ones(n,1)*[-1 1]/h,[0:1],n-1,n);
