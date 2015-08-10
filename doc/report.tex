@@ -498,6 +498,8 @@ the original PDE, the evaluation of the gradient requires a factor of 2 less
 computation and storage as the gradient in the reduced approach. 
 A summary of the leading order computational costs of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}.
 
+[ELABORATE ON COMPUTATIONAL COSTS, CONTINUATION IN LAMBDA]
+
 \section{Case studies}
 \label{examples}
 The following experiments are done in Matlab, using direct factorization to solve the PDEs (with Matlab \texttt{slash}). We consider both a Gauss-Newton (GN) and a Quasi-Newton (QN) variant of the algorithms and use a weak Wolfe linesearch to determine the steplength. In the GN method the Hessian is inverted using conjugate gradients (\texttt{pcg}) up to a relative tolerance of $\eta$. The matrix-vector products are computed on the fly. For the QN method we use the L-BFGS inverse Hessian with a history size of 5 \cite{Nocedal}. We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}. In all experiments, we set $\lambda$ relative to the largest eigenvalue of $A^{-T}P^T\!PA^{-1}$ at the initial iterate. This scaling is justified by remark \ref{remark}.
@@ -507,7 +509,7 @@ To avoid the inverse crime, we compute the data for the ground truth model on a 
 In these experiments, we illustrate that the penalty method: 
 \begin{itemize}
 \item converges to a stationary point of the Lagrangian within the predicted tolerance of $\mcl{O}(\lambda^{-1})$;
-\item gives practically the same or a better results as the reduced method at a lower computational cost;
+\item can give practically the same or a better results as the reduced method at a lower computational cost;
 \item is not overly sensitive to noise;
 \item leads to a less non-linear optimization problem than the conventional reduced approach.
 \end{itemize}
@@ -567,18 +569,18 @@ G(\mbf{m},\mbf{u}) = \mathsf{diag}(\mbf{s}')\mathsf{diag}(\mbf{u}),
 \eq
 where $s'_i = \omega^2$ in the interior and $s'_i = (\omega^2 + \imath\omega/\sqrt{m_i})/2$ on the boundary.
 
-The observation matrix $P$ is samples the solution at the receiver locations using 2D linear interpolation while the point sources are defined using adjoint 2D linear interpolation.
+The observation matrix $P$ samples the solution at the receiver locations using 2D linear interpolation while the point sources are defined using adjoint 2D linear interpolation.
 
 \subsubsection{Ultrasound tomography}
 
 The domain $\Omega = [0,1]\times [0,1]$ $m$  is discretized using $N_1\times N_2$ points. 
-The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure  \ref{fig:2D_model}. We use a single frequency of $5 kHz$ (i.e., $\omega = 10^4\pi$). The data for the ground-truth model are generated using $N_1=N_2=101$ while the following experiments are done with $N_1=N_2=51$.
+The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure  \ref{fig:2D_model}. We use a single frequency of $5$ kHz (i.e., $\omega = 10^4\pi$). The data for the ground-truth model are generated using $N_1=N_2=101$ while the following experiments are done with $N_1=N_2=51$.
 
 \textbf{Non-linearity:}
 First, we investigate the sensitivity of the misfit functions $\phi$ and $\phi_{\lambda}$ by plotting $\phi(\mbf{m}^* + \delta_1 \mbf{v}_1 + \delta_2\mbf{v}_2)$ and $\phi_{\lambda}(\mbf{m}^* + \delta_1 \mbf{v}_1 + \delta_2\mbf{v}_2)$ as a function of $(\delta_1,\delta_2)$. 
 We take $\mbf{v}_1, \mbf{v}_2$ to be slowly oscillatory modes as shown in figure \ref{fig:2D_exp0a}. The misfit as a function of $(\delta_1,\delta_2)$ is shown in figure \ref{fig:2D_exp0b}. We see a radically different behaviour for the reduced and penalty methods.
 
-The first exhbits strong non-linearity and some spurious stationary points while for small $\lambda$ the penalty misfit is much better behaved. For larger values $\lambda$ the penalty misfit starts to behave more like the reduced misfit as expected.
+The first exhibits strong non-linearity and some spurious stationary points while for small $\lambda$ the penalty misfit is much better behaved. For larger values $\lambda$ the penalty misfit starts to behave more like the reduced misfit as expected.
 
 \textbf{Inversion:}
 For the inversion, we include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 2$ and compare  the GN method ($\epsilon=10^{-6}$, $\eta=10^{-1}$) to the QN method ($\epsilon=10^{-6}$). The initial parameter $\mathbf{m}_0$ is constant at $\frac{1}{4}$ $s^2/m^2$.
