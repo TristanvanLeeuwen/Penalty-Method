@@ -9,7 +9,7 @@ mt = ones(n,1)./1.^2;
 omega = 2*pi*f;
 
 D  = spdiags(ones(n,1)*[-1 1]/h,[0:1],n-1,n);
-w  = ones(n,1); w([1 end]) = 0;
+w  = ones(n,1); w([1 end]) = .5;
 At = omega^2*diags(w.*mt) - D'*D;
 
 [Vr,Dr] = eig(full(At'*At)); [Dr,Ir] = sort(diag(Dr),'descend'); Vr = Vr(:,Ir);

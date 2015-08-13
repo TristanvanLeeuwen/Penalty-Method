@@ -385,6 +385,7 @@ Lemma \ref{lemma} suggests a natural scaling for the penalty parameter, $\lambda
 \end{remark}
 
 \begin{theorem}
+\label{theorem1}
 At each iteration of algorithm \ref{alg:penalty}, the iterates satisfy $\|\mcl{L}_{\mbf{u}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda})\|_2 = 0$
 and
 $\|\mcl{L}_{\mbf{v}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda})\|_2 = \mcl{O}(\lambda^{-1})$.
@@ -428,13 +429,82 @@ and hence that
 This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. Next, we analyze the accuracy in terms of the distance of the final iterate $\mbf{m}^*$ to a stationary point of the Lagrangian.
 
 \begin{theorem}
+\label{theorem2}
 Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \alpha\epsilon + \beta \lambda^{-1}$.
 \end{theorem}
 \begin{proof}
-[INSERT PROOF]
+We expand the gradient of the Lagrangian at the stationary point as
+\bq
+\left(
+\begin{array}{c}
+\mcl{L}_{\mbf{m}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda})\\
+\mcl{L}_{\mbf{u}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda})\\
+\mcl{L}_{\mbf{v}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda})\\
+\end{array}
+\right)
+\approx\nonumber\\
+\left(
+\begin{array}{ccc}
+R(\mbf{m}^*,\mbf{u}^*,\mbf{v}^*)&K(\mbf{m}^*,\mbf{v}^*)^T&G(\mbf{m}^*,\mbf{u}^*)^T\\
+K(\mbf{m}^*,\mbf{v}^*)&P^T\!P&A(\mbf{m}^*)^T\\
+G(\mbf{m}^*,\mbf{u}^*)&A(\mbf{m}^*)&0\\
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+\mbf{m}^*_{\lambda} - \mbf{m}^*\\
+\mbf{u}^*_{\lambda} - \mbf{u}^*\\
+\mbf{v}^*_{\lambda} - \mbf{v}^*\\
+\end{array}
+\right)
+\eq
+Using the expressions for the gradient of the Lagrangian at $(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})$ obtained in Theorem \ref{theorem1} we can obtain an expression for $\mbf{m}^*_{\lambda} - \mbf{m}^*$ etc. by solving
+\bq
+\left(
+\begin{array}{ccc}
+R&K^T&G^T\\
+K&P^T\!P&A^T\\
+G&A&0\\
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+\mbf{m}^*_{\lambda} - \mbf{m}^*\\
+\mbf{u}^*_{\lambda} - \mbf{u}^*\\
+\mbf{v}^*_{\lambda} - \mbf{v}^*\\
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+\mcl{L}_{\mbf{m}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda})\\
+0\\
+\lambda^{-1}\mathbf{v}^* + \mcl{O}(\lambda^{-2})\\
+\end{array}
+\right)
+\eq
+Eliminating the bottom two rows we find
+\bq
+H(\mbf{m}^*_{\lambda} - \mbf{m}^*) + \lambda^{-1}F\mbf{v}^* = \mcl{L}_{\mbf{m}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda}) + \mcl{O}(\lambda^{-2}),
+\eq
+where 
+\[
+H = R - K^TA^{-1}G-G^TA^{-T}K + G^TA^{-T}P^TPA^{-1}G
+\]
+is the reduced Hessian and
+\[
+F = K^TA^{-1} - G^TA^{-T}P^TPA^{-1}.
+\]
+%left(
+%\begin{array}{c}
+%G(\mbf{m},\mbf{u})^T\mathbf{v},\\
+%A(\mathbf{m})^T\mathbf{v} + P^T(P\mathbf{u} - \mathbf{d}),\\
+%A(\mathbf{m})\mathbf{u} - \mathbf{q},
+%\end{array}
+%\right),
 \end{proof}
 \begin{remark}
-Many inverse problems are ill-posed, meaning that we can only hope to resolve certain aspects of the parameters, given by the dominant eigenvectors of the Hessian. The error-level $\epsilon$ can therefore be quite large, even if the error in these dominant  eigenvectors has been resolved. As long as the $\mcl{O}(\lambda^{-1})$ term is neglegible compared to $\epsilon$, algorithm \ref{alg:penalty} gives a parameter estimate with the desired accuracy for a finite $\lambda$.
+Many inverse problems are ill-posed, meaning that we can only hope to resolve certain aspects of the parameters, given by the dominant eigenvectors of the reduced Hessian. The error-level $\epsilon$ can therefore be quite large, even if the error in these dominant  eigenvectors has been resolved. As long as the $\mcl{O}(\lambda^{-1})$ term is neglegible compared to $\epsilon$, algorithm \ref{alg:penalty} gives a parameter estimate with the desired accuracy for a finite $\lambda$.
 \end{remark}
 [HOW TO CHOOSE LAMBDA A PRIORI]
 \section{Algorithm}
