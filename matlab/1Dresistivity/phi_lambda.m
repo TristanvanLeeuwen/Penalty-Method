@@ -21,7 +21,7 @@ G = @(u)getG(m,u);
 
 %% forward solve
 %U = [A;(1/sqrt(lambda))*Q']\[Q;(1/sqrt(lambda))*D];
-U = ((A'*A) + (1/lambda)*(Q*Q'))\((1/lambda)*Q*D + A'*Q);
+U = (lambda*(A'*A) + (Q*Q'))\(Q*D + lambda*A'*Q);
 
 %% adjoint field
 V = lambda*(A*U - Q);
@@ -40,7 +40,7 @@ end
 H = @(x)Hmv(x,m,Q,U,alpha,lambda,model);
 
 %% optimality
-opt = [norm(g),  norm(A'*V - Q*(D - Q'*U),'fro'), norm(A*U - Q,'fro'), 0];
+opt = [norm(g),  norm(A'*V - Q*(D - Q'*U),'fro'), norm(A*U - Q,'fro'), 0, 0];
 
 end
 

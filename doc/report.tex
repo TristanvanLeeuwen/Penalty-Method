@@ -368,13 +368,13 @@ For $\lambda>\mu_1(A^{-T}P^T\!PA^{-1})$ we may expand the inverse as $(I + \lamb
 and find that
 \bq
 \mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
-&&+ \lambda^{-1}\left(A^{T}\!A\right)^{-1}P^T\!\left(\mbf{d} - PA^{-1}\mbf{q}\right)\nonumber\\
-&&- \lambda^{-2}\left(A^{T}\!A\right)^{-1}P^T\!P\left(A^{T}\!A\right)^{-1}P^T\!\mbf{d} + \mcl{O}(\lambda^{-3})\nonumber\\
-&=& \mbf{u}_{\mathrm{red}} + \lambda^{-1}A^{-1}\mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-2}).
+&&+ \lambda^{-1}A^{-1}\!A^{-T}P^T\!\left(\mbf{d} - PA^{-1}\mbf{q}\right)\nonumber\\
+&&- \lambda^{-2}A^{-1}\left(PA^{-1}\right)^{T}\!\!\left(PA^{-1}\right)A^{-T}P^T\!\left(\mbf{d} - PA^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-3})\nonumber\\
+&=& \mbf{u}_{\mathrm{red}} + \lambda^{-1}A^{-1}\left(I - \lambda^{-1}\left(PA^{-1}\right)^{T}\!\!\left(PA^{-1}\right)\right)\mbf{v}_{\mathrm{red}}  + \mcl{O}(\lambda^{-3}).
 \eq
 We immediately find
 \bq
-\mbf{v}_{\lambda} = \mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-1}).
+\mbf{v}_{\lambda} = \mbf{v}_{\mathrm{red}} - \lambda^{-1}\left(PA^{-1}\right)^{T}\!\!\left(PA^{-1}\right)\mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-2}).
 \eq
 \qed
 \end{proof}
@@ -403,12 +403,11 @@ for any $\mbf{m}$
 Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\mu_{1}(A^{-T}P^T\!PA^{-1})$ presented in Lemma \ref{lemma}, we find
 \bq
 \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\nonumber\\
-&=& \lambda^{-1}A(\mbf{m})^{-T}P^T\left(\mbf{d} - PA(\mbf{m})^{-1}\mbf{q}\right) + \mcl{O}(\lambda^{-2})\nonumber\\
 &=& \lambda^{-1}\mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-2}).
 \eq
 Thus we find
 \bq
-\|\mcl{L}_{\mathbf{v}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 = \mcl{O}(\lambda^{-1}).
+\|\mcl{L}_{\mathbf{v}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \mcl{O}(\lambda^{-1}).
 \eq
 At a point $\mbf{m}^*$ for which $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$
 we immediately find that
@@ -426,11 +425,15 @@ and hence that
 \qed
 \end{proof}
 
-This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. Next, we analyze the accuracy in terms of the distance of the final iterate $\mbf{m}^*$ to a stationary point of the Lagrangian.
+This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. Next, we derive an expression for the distance of the final iterate of algorithm \ref{alg:penalty}, $\mbf{m}^*_{\lambda}$, to a stationary point of the Lagrangian, $\mbf{m}^*$ in terms of the chosen tolerance, $\epsilon$, and the data-error $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$. The expression of the form
+\[
+\|\mbf{m}_\lambda^* - \mbf{m}^*\|_2 \leq \alpha\cdot\epsilon + \lambda^{-1}\beta\cdot\eta
+\]
+allows us to analyze the convergence of the proposed method further.
 
 \begin{theorem}
 \label{theorem2}
-Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \alpha\epsilon + \beta \lambda^{-1}$.
+Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left( \widetilde{\epsilon} + \widetilde{\lambda}^{-1}\widetilde{\eta}\right)$ where $H$ is the reduced Gauss-Newton Hessian with condition number $\kappa(H)$ and largest eigenvalue $\mu_1(H)$, $\widetilde{\epsilon} = \epsilon/\mu_1(H)$ is the scaled tolerance, $\widetilde{\eta} = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2/\sqrt{\mu_1(H)}$ is the scaled data-error and $\widetilde{\lambda} = \lambda / \mu_1(A^{-T}P^TPA^{-1})$ is the scaled penalty paramater.
 \end{theorem}
 \begin{proof}
 We expand the gradient of the Lagrangian at the stationary point as
@@ -485,7 +488,8 @@ G&A&0\\
 \eq
 Eliminating the bottom two rows we find
 \bq
-H(\mbf{m}^*_{\lambda} - \mbf{m}^*) + \lambda^{-1}F\mbf{v}^* = \mcl{L}_{\mbf{m}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda}) + \mcl{O}(\lambda^{-2}),
+\label{eq:dm}
+H(\mbf{m}^*_{\lambda} - \mbf{m}^*) = \mcl{L}_{\mbf{m}}(\mbf{m}^*_{\lambda}, \mbf{u}^*_{\lambda}, \mbf{v}^*_{\lambda}) + \lambda^{-1}F\mbf{v}^* + \mcl{O}(\lambda^{-2}),
 \eq
 where 
 \[
@@ -493,20 +497,39 @@ H = R - K^TA^{-1}G-G^TA^{-T}K + G^TA^{-T}P^TPA^{-1}G
 \]
 is the reduced Hessian and
 \[
-F = K^TA^{-1} - G^TA^{-T}P^TPA^{-1}.
+F = G^TA^{-T}P^TPA^{-1} - K^TA^{-1}.
 \]
-%left(
-%\begin{array}{c}
-%G(\mbf{m},\mbf{u})^T\mathbf{v},\\
-%A(\mathbf{m})^T\mathbf{v} + P^T(P\mathbf{u} - \mathbf{d}),\\
-%A(\mathbf{m})\mathbf{u} - \mathbf{q},
-%\end{array}
-%\right),
+Expressing $\mbf{v}^*$ as
+\[
+\mbf{v} = A^{-T}P^T\left(\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\right),
+\]
+and ignoring the second order terms in $H$ and $F$, i.e, 
+\[
+H \approx G^TA^{-T}P^TPA^{-1}G,
+\]
+and
+\[
+F \approx G^TA^{-T}P^TPA^{-1}
+\]
+we find
+\[
+\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq ||H^{-1}||_2\left(\epsilon +  \widetilde{\lambda}^{-1} \|G^TA^{-T}P^T\|_2\eta\right),
+\]
+where $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$ denotes the data-error.
+
+Introducing the scaled tolerance and data-error we express this as
+\[
+\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left(\widetilde{\epsilon} +  \widetilde{\lambda}^{-1} \widetilde{\eta}\right).
+\]
 \end{proof}
 \begin{remark}
-Many inverse problems are ill-posed, meaning that we can only hope to resolve certain aspects of the parameters, given by the dominant eigenvectors of the reduced Hessian. The error-level $\epsilon$ can therefore be quite large, even if the error in these dominant  eigenvectors has been resolved. As long as the $\mcl{O}(\lambda^{-1})$ term is neglegible compared to $\epsilon$, algorithm \ref{alg:penalty} gives a parameter estimate with the desired accuracy for a finite $\lambda$.
+We may also express equation (\ref{eq:dm}) as
+\[
+H(\mbf{m}_{\lambda}^* - \mbf{m}^*) = \nabla\phi_{\lambda}(\mbf{m}^*_\lambda) + \left( \nabla\phi(\mbf{m}^*_\lambda) - \nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\right).
+\]
+As long as the error $\|\nabla\phi(\mbf{m}^*_\lambda) - \nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ is small compared to $\|\nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ we may expect that Algorithm \ref{alg:penalty} yields a stationary point of the Lagrangian within the desired tolerance. 
 \end{remark}
-[HOW TO CHOOSE LAMBDA A PRIORI]
+
 \section{Algorithm}
 \label{algorithm}
 In this section, we discuss some practicalities of the implementation of algorithm \ref{alg:penalty}. We slightly elaborate the notation to explicitly 
@@ -552,7 +575,7 @@ are shown in figures \ref{fig:example2} and \ref{fig:example3}. These show that 
 that iterative methods will perform similarly on the augmented system as they would on the original system. \emph{How} to effectively precondition the augmented system given a good preconditioner for the original system is a different matter which is outside the scope of this paper.
 
 \textbf{Direct methods:} When the matrix has additional structure we might actually prefer a direct method over an iterative method. An example is explicit time-stepping, where the system matrix $A$ exhibits a lower-triangular block-structure. In this case the action of $A^{-1}$ can be computed efficiently via forward substitution, requiring storage of only a few time-slices of the state. The adjoint system $A^{-T}$ can be solved by backward substitution, however, the full time-history of the state variable is needed to compute the gradient.
-For the penalty method, the augmented system $A^T\!A + P^T\!P$ will have a banded structure and the system can be solved using a block version of the Thomas algorithm, which again would require storage of the full time-history. So even in this setting it seems possible to apply the penalty method at roughly the same complexity as the reduced method.
+For the penalty method, the augmented system $A^T\!A + P^T\!P$ will have a banded structure and the system can be solved using a block version of the Thomas algorithm, which again would require storage of the full time-history. So even in this setting it seems possible to apply the penalty method at roughly the same per-iteration complexity as the reduced method.
 
 \subsection{Gradient and Hessian computation}
 Given these solutions $\mbf{u}_k$ of (\ref{eq:u_pen}), the gradient, $\mbf{g}_{\lambda}$ and Gauss-Newton Hessian $H_{\lambda}$ of $\phi_{\lambda}$ are given by (cf eqs. \ref{eq:gradpen}-\ref{eq:hesspen})
@@ -561,18 +584,25 @@ Given these solutions $\mbf{u}_k$ of (\ref{eq:u_pen}), the gradient, $\mbf{g}_{\
 H_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\left(I - A_k\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)^{-1}A_k^T \right)G_k,
 \eq
 where $G_k = G(\mbf{m},\mbf{u}_k)$. We can compute the inverse of $\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)$ in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the gradient on the fly. 
+
+\subsection{Choosing $\lambda$}
+An important aspect of the proposed method is the choice of the penalty parameter, $\lambda$. Theorem \ref{theorem1} essentially states that we can expect to find a stationary point of the Lagrangian within finite accuracy with finite $\lambda$ as long as $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ is small compared to $\|\mcl{L}_{\mbf{m}}\|_2$.
+We can easily keep track of this quantity -- at almost no additional computational cost -- during the iterations and increase $\lambda$ as needed. Initialization can be done by directly enforcing $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be some fraction of $\|\mcl{L}_{\mbf{m}}\|_2$ at the initial iterate, or taking $\lambda$ to be of the form $\lambda = \widetilde{\lambda}\mu_1(A^{-T}P^TPA^{-1})$. 
+
  
 \subsection{Complexity estimates}
 Assuming we can solve the overdetermined system (\ref{eq:u_pen}) as efficiently as
 the original PDE, the evaluation of the gradient requires a factor of 2 less
 computation and storage as the gradient in the reduced approach. 
-A summary of the leading order computational costs of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}.
+A summary of the leading order computational costs \emph{per iteration} of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}. 
 
-[ELABORATE ON COMPUTATIONAL COSTS, CONTINUATION IN LAMBDA]
+[SOME MORE ON COMPLEXITY]
 
 \section{Case studies}
 \label{examples}
 The following experiments are done in Matlab, using direct factorization to solve the PDEs (with Matlab \texttt{slash}). We consider both a Gauss-Newton (GN) and a Quasi-Newton (QN) variant of the algorithms and use a weak Wolfe linesearch to determine the steplength. In the GN method the Hessian is inverted using conjugate gradients (\texttt{pcg}) up to a relative tolerance of $\eta$. The matrix-vector products are computed on the fly. For the QN method we use the L-BFGS inverse Hessian with a history size of 5 \cite{Nocedal}. We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}. In all experiments, we set $\lambda$ relative to the largest eigenvalue of $A^{-T}P^T\!PA^{-1}$ at the initial iterate. This scaling is justified by remark \ref{remark}.
+
+[EXPLAIN WARNSTART STRATEGY]
 
 To avoid the inverse crime, we compute the data for the ground truth model on a finer grid than used for the inversion. 
 
@@ -664,6 +694,8 @@ The results for the QN method are shown in figure \ref{fig:2D_exp2}. The converg
 
 \textbf{Sensitivity to noise:}
 Results for the QN method on data with 10\% Gaussian noise are shown in figure  \ref{fig:2D_exp3}. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. These results show that the penalty approach is not overly sensitive to noise and gives very similar --even slightly better-- results compared to the reduced approach.
+
+[INTERPRET RESULT IN LIGHT OF THM 2.]
 
 \subsubsection{Seismic tomography}
 Here, the domain $\Omega = [0,5]\times [0,20]$ $km$ is discretized using $N_1\times N_2$ points. The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure \ref{fig:overthrust_model}. We use a frequency of $2 Hz$ (i.e., $\omega = 4\pi$). The data for the ground-truth are generated using $N_1=101, N_2=401$ while the following experiments are done with $N_1=51, N_2=201$. 

@@ -1,5 +1,5 @@
 %% setup
-f    = 5;
+f    = 10;
 mfun = @(x)1 + exp(-1e1*(x-.5).^2);
 
 alpha = 1e-6;
@@ -52,6 +52,33 @@ lambda3 = 1e1*mu;
 fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda3,model);
 [m3,info3] = QGNewton(fh,m0,opts);
 
+% penalty warmstarts
+opts.tol = 1e-1;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,5e-1*mu,model);
+[m4,info41] = QGNewton(fh,m0,opts);
+
+opts.tol = 1e-2;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,5e0*mu,model);
+[m4,info42] = QGNewton(fh,m4,opts);
+
+opts.tol = 1e-3;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,5e1*mu,model);
+[m4,info43] = QGNewton(fh,m4,opts);
+
+opts.tol = 1e-4;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,5e1*mu,model);
+[m4,info44] = QGNewton(fh,m4,opts);
+
+opts.tol = 1e-5;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,5e2*mu,model);
+[m4,info45] = QGNewton(fh,m4,opts);
+
+
+info4 = [info41; info42(2:end,:); info43(2:end,:); info44(2:end,:); info45(2:end,:)];
+info4(:,1) = [1:size(info4,1)]';
+info4(end,2) = sum(info4(:,2));
+
+
 save('exp1');
 
 %% plot
@@ -61,9 +88,10 @@ figure;
 semilogy(sqrt(sum(infor(:,[5,6,7]).^2,2)),'k');hold on;
 semilogy(sqrt(sum(info1(:,[5,6,7]).^2,2)),'r');hold on;
 semilogy(sqrt(sum(info2(:,[5,6,7]).^2,2)),'b');hold on;
-semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');
-legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','location','southwest');
-xlabel('iteration');ylabel('||\nabla L||_2');ylim([1e-10 2]);xlim([1 7])
+semilogy(sqrt(sum(info3(:,[5,6,7]).^2,2)),'g');hold on;
+semilogy(sqrt(sum(info4(:,[5,6,7]).^2,2)),'k--');
+legend('reduced','\lambda = 0.1','\lambda = 1','\lambda = 10','increasing lambda','location','southwest');
+xlabel('iteration');ylabel('||\nabla L||_2');ylim([1e-6 1e1]);xlim([1 7])
 
 figure;
 plot(x,mfun(x),'k--',x,mr,'k',x,m1,'r',x,m2,'b',x,m3,'g');
@@ -72,5 +100,5 @@ xlabel('x');ylabel('m(x)');
 
 savefig(1:2,'../../doc/figs/1D_exp1');
 
-table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])'];
-latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/1D_exp1.tex');
+table = [[1; 2].*infor(end,[1 2])' info1(end,[1 2])' info2(end,[1 2])' info3(end,[1 2])' info4(end,[1 2])'];
+latextable(table,'Horiz',{'reduced','$\lambda = 0.1$','$\lambda = 1$','$\lambda = 10$','increasing $\lambda$'},'Vert',{'iterations','PDE solves'},'Hline',[1 NaN],'format','%d','name','../../doc/figs/1D_exp1.tex');

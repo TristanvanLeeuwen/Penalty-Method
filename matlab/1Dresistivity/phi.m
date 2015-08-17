@@ -39,7 +39,7 @@ end
 H = @(x)Hmv(x,m,Q,U,alpha,model);
 
 %% optimality
-opt = [norm(g),  norm(A'*V - Q*(D - Q'*U),'fro'), norm(A*U - Q,'fro'), 0];
+opt = [norm(g),  norm(A'*V - Q*(D - Q'*U),'fro'), norm(A*U - Q,'fro'), 0, 0];
 
 end
 
