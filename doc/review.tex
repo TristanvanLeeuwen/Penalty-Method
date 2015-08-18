@@ -13,9 +13,20 @@ The new/updated manuscript is well structured and well written. The authors expl
 \begin{itemize}
 \item I suggest the authors discuss any relevant research (if applicable) to the proposed method. 
 
+\vspace{5mm}\emph{We discuss the equation-error approach and penalty methods for optimization as well as all-at-one and reduced approaches for PDE-constrained optimization. If we have missed any particular relevant research in our discussion we would be happy to take suggestions.}
+
+
+
 \item Add a (separate) subsection on the computational cost of the method and show that it's scalable, hence indeed feasible for large-scale problems. 
 
+\vspace{5mm}
+\emph{We discuss the computational cost in section 5.4. We have extended the discussion a little. A full-scale (computational) scalability analysis is outside the scope of this paper.}
+
 \item Give a more complete list of references for the full space and reduced space methods. 
+
+\vspace{5mm}
+\emph{We added some more references. If we are missing a particularly relevant reference we would be happy to take suggestions.}
+
 
 \item Please run check for both typos and writing errors, see for instance in the abstract missing "to" before the initial iterate. 
 \end{itemize}
@@ -51,12 +62,38 @@ However the corresponding drawbacks are as follows:
 \item The fact that the reduced-penalized approach is less nonlinear than the reduced approach is closely related to the convexity of the problem, see my comments in the previous item. 
 \end{enumerate} 
 
-In my opinion this is the major problem of this approach, that it is not clear how to choose $\lambda$, and that the only way to solve the problem is to do a continuation strategy for $\lambda$, ideally a path-following method. In their numerical results, the authors obtain good reconstructions for several values of $\lambda$ even when $\lambda$ is quite small (typically $\lambda=0.1,1$ and $10$). This seems surprising since one would expect a good reconstruction for a large $\lambda$ only, indeed, how can the solution of the PDE be close to the original problem with such small value of $\lambda$? Maybe this is something specific for inverse problems. In fact, looking for instance at the graphs for $\|m^k - m^*\|_2$ in Figures 8,9,10, one observes that the minimum of $\|m^k - m^*\|_2$ is roughly the same for all values of $\lambda$ and for the reduced approach, so my guess is that $\lambda$ in fact does not need to converge to infinity, i.e. the PDE does not need to be solved to full accuracy because of the ill-posedness of the problem. However this would require a rigorous mathematical analysis: the error should be splitted in approximation error and data error, and then one could see what is the influence of $\lambda$ on this two errors. It would maybe be clear then that it is useless to drive $\lambda\to\infty$. If this is really the case, then this approach could indeed be quite interesting for inverse problems. 
+\vspace{5mm}
 
+\emph{The analysis presented in section 4 suggests that we can indeed reach a finite tolerance for a finite value of $\lambda$ and the numerical experiments suggest that satisfactory results can be obtained using a single fixed value of $\lambda$. To reach any given tolerance, however, a continuation is needed. We have stressed this in the discussion on the computational complexity. Also, we have included some numerical results using a very rudimentary continuation strategy showing that this does have to affect the computational cost too much, since only a few iterations are required for each $\lambda$.}
+
+\vspace{5mm}
+
+In my opinion this is the major problem of this approach, that it is not clear how to choose $\lambda$, and that the only way to solve the problem is to do a continuation strategy for $\lambda$, ideally a path-following method. In their numerical results, the authors obtain good reconstructions for several values of $\lambda$ even when $\lambda$ is quite small (typically $\lambda=0.1,1$ and $10$). This seems surprising since one would expect a good reconstruction for a large $\lambda$ only, indeed, how can the solution of the PDE be close to the original problem with such small value of $\lambda$? 
+
+\vspace{5mm}
+
+\emph{The $\lambda$ is scaled w.r.t to the largest eigenvalue of $A^{-T}P^TPA^{-1}$, so $\lambda=0.1$ is relatively small but only compared to the natural scaling of the system. We have included some additional results and comments that explain this behaviour; we need the $\mathcal{O}(\lambda^{-1})$ to be small compared to the given tolerance. The fact that such good reconstructions can be obtained with relatively high tolerance is particular for inverse problems}
+
+\vspace{5mm}
+
+Maybe this is something specific for inverse problems. In fact, looking for instance at the graphs for $\|m^k - m^*\|_2$ in Figures 8,9,10, one observes that the minimum of $\|m^k - m^*\|_2$ is roughly the same for all values of $\lambda$ and for the reduced approach, so my guess is that $\lambda$ in fact does not need to converge to infinity, i.e. the PDE does not need to be solved to full accuracy because of the ill-posedness of the problem. However this would require a rigorous mathematical analysis: the error should be splitted in approximation error and data error, and then one could see what is the influence of $\lambda$ on this two errors. It would maybe be clear then that it is useless to drive $\lambda\to\infty$. If this is really the case, then this approach could indeed be quite interesting for inverse problems. 
+
+\vspace{5mm}
+
+\emph{We included some analysis, showing that we can converge to a given error $\|m^k - m^*\|_2$ as long as a given $\mathcal{O}(\lambda^{-1})$ term is small compared to the tolerance. We also give some suggestions on how to choose such a $\lambda$.}
+
+\vspace{5mm}
 
 Therefore my feeling is that the benefits of the method are put into the spotlight while the drawbacks are hidden in this paper, although the authors discuss them briefly towards the end of the paper. I think that the idea has a good potential, but there should be more mathematical analysis of the method or at least a more precise discussion of the drawbacks of the method to have a fair comparison with other methods. Indeed the method really seems at first much more expensive than the reduced approach for some very hypothetical benefits. 
 
 Also, it seems that the method has been already introduced and discuss in other papers from the authors [13] (also [18]), so since there is almost no mathematical analysis of the problem in the present paper, what is the added value compared to [13,18]? 
+
+\vspace{5mm}
+
+\emph{In [13] we introduce the method in a very ad-hoc manner and present some numerical results on a particular application in seismology. The goal of the current paper is to put the method on a more sound basis and show how it compares to the conventional reduced approach. Analysis of the convergence (as done in section 4) is not presented in [13]. [18] is not about the penalty approach. We cite it in the context of deriving the expressions for the gradient and Hessian of $\phi_{\lambda}$.}
+
+\vspace{5mm}
+
 Therefore I would recommand at least a major revision. There is also a list of comments and typos below: 
 \begin{itemize} 
 \item Page 1, line 34: "to" is missing 

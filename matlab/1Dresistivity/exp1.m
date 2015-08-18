@@ -52,29 +52,26 @@ lambda3 = 1e1*mu;
 fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda3,model);
 [m3,info3] = QGNewton(fh,m0,opts);
 
+lambda4 = 1e2*mu;
+
 % penalty warmstarts
-opts.tol = 1e-1;
-fh = @(m)phi_lambda(m,Q,Dt,alpha,5e-1*mu,model);
+opts.tol = 1e-3;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda1,model);
 [m4,info41] = QGNewton(fh,m0,opts);
 
-opts.tol = 1e-2;
-fh = @(m)phi_lambda(m,Q,Dt,alpha,5e0*mu,model);
+opts.tol = 1e-4;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda2,model);
 [m4,info42] = QGNewton(fh,m4,opts);
 
-opts.tol = 1e-3;
-fh = @(m)phi_lambda(m,Q,Dt,alpha,5e1*mu,model);
+opts.tol = 1e-5;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda3,model);
 [m4,info43] = QGNewton(fh,m4,opts);
 
-opts.tol = 1e-4;
-fh = @(m)phi_lambda(m,Q,Dt,alpha,5e1*mu,model);
+opts.tol = 1e-6;
+fh = @(m)phi_lambda(m,Q,Dt,alpha,lambda4,model);
 [m4,info44] = QGNewton(fh,m4,opts);
 
-opts.tol = 1e-5;
-fh = @(m)phi_lambda(m,Q,Dt,alpha,5e2*mu,model);
-[m4,info45] = QGNewton(fh,m4,opts);
-
-
-info4 = [info41; info42(2:end,:); info43(2:end,:); info44(2:end,:); info45(2:end,:)];
+info4 = [info41; info42(2:end,:); info43(2:end,:); info44(2:end,:)];
 info4(:,1) = [1:size(info4,1)]';
 info4(end,2) = sum(info4(:,2));
 

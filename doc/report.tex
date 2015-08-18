@@ -10,7 +10,7 @@ $^2$ Dept. of Earth, Ocean and Atmospheric Sciences, University of British Colum
 \ead{T.vanLeeuwen@uu.nl}
 
 \begin{abstract}
-Many inverse and parameter estimation problems can be written as PDE-constrained optimization problems. The goal, then, is to infer the parameters, typically coefficients of the PDE, from partial measurements of the solutions of the PDE for several right-hand-sides. Such PDE-constrained problems can be solved by finding a stationary point of the Lagrangian, which entails simultaneously updating the parameters and the (adjoint) state variables. For large-scale problems, such an \emph{all-at-once} approach is not feasible as it requires storing all the state variables. In this case one usually resorts to a \emph{reduced} approach where the constraints are explicitly eliminated (at each iteration) by solving the PDEs. These two approaches, and variations thereof, are the main workhorses for solving PDE-constrained optimization problems arising from inverse problems. In this paper, we present an alternative method that aims to combine the advantages of both approaches. Our method is based on a quadratic penalty formulation of the constrained optimization problem. By eliminating the state variable, we develop an efficient algorithm that has roughly the same computational complexity as the conventional \emph{reduced} approach while exploiting a larger search space. Numerical results show that this method indeed reduces some of the non-linearity of the problem and is less sensitive to the initial iterate.
+Many inverse and parameter estimation problems can be written as PDE-constrained optimization problems. The goal is to infer the parameters, typically coefficients of the PDE, from partial measurements of the solutions of the PDE for several right-hand-sides. Such PDE-constrained problems can be solved by finding a stationary point of the Lagrangian, which entails simultaneously updating the parameters and the (adjoint) state variables. For large-scale problems, such an \emph{all-at-once} approach is not feasible as it requires storing all the state variables. In this case one usually resorts to a \emph{reduced} approach where the constraints are explicitly eliminated (at each iteration) by solving the PDEs. These two approaches, and variations thereof, are the main workhorses for solving PDE-constrained optimization problems arising from inverse problems. In this paper, we present an alternative method that aims to combine the advantages of both approaches. Our method is based on a quadratic penalty formulation of the constrained optimization problem. By eliminating the state variable, we develop an efficient algorithm that has roughly the same computational complexity as the conventional \emph{reduced} approach while exploiting a larger search space. Numerical results show that this method indeed reduces some of the non-linearity of the problem and is less sensitive to the initial iterate.
 \end{abstract}
 
 \maketitle
@@ -24,7 +24,7 @@ For linear PDEs, the inverse problem can be formulated (after discretization) as
 \min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2  \quad 
 \mbox{s.t.} \quad A(\mathbf{m})\mathbf{u} = \mathbf{q},
 \eq
-where $\mathbf{m}\in\mathbb{R}^{M}$ represents the (gridded) parameter of interest, $A(\mathbf{m})\in\mathbb{C}^{N\times N}$ and $\mathbf{q}\in\mathbb{C}^{N}$ represent the discretized PDE and source term, $\mathbf{u}\in\mathbb{C}^{N}$ is the state variable and $\mathbf{d}\in \mathbf{C}^{L}$ are the observed data. The measurement process is modelled by sampling the state with $P\in \mathbb{R}^{L\times N}$. Throughout the paper $^T$ denotes the (complex-conjugate) transpose.  
+where $\mathbf{m}\in\mathbb{R}^{M}$ represents the (gridded) parameter of interest, $A(\mathbf{m})\in\mathbb{C}^{N\times N}$ and $\mathbf{q}\in\mathbb{C}^{N}$ represent the discretized PDE and source term, $\mathbf{u}\in\mathbb{C}^{N}$ is the state variable and $\mathbf{d}\in \mathbb{C}^{L}$ are the observed data. The measurement process is modelled by sampling the state with $P\in \mathbb{R}^{L\times N}$. Throughout the paper $^T$ denotes the (complex-conjugate) transpose.  
 
 Typically, measurements are made from multiple, say $K$, independent experiments,
 in which case $\mathbf{u} \in \mathbb{C}^{KN}$ is a block vector containing the state variables for all the experiments. Likewise, $\mathbf{q}\in \mathbb{C}^{KN}$ and $\mathbf{d}\in \mathbb{C}^{KL}$ are block vectors containing the right-hand-sides and observations for all experiments. The matrices $A(\mathbf{m})$ and $P$ will be block-diagonal matrices in this case. Typical sizes for $M,N,K,L$ for seismic inverse problems are listed in table \ref{table:sizes}.
@@ -37,7 +37,7 @@ In applications arising from inverse problems, the constrained problem (\ref{eq:
 \label{eq:red}
 \min_{\mbf{m}} \ts{\frac{1}{2}}||PA(\mathbf{m})^{-1}\mathbf{q} - \mathbf{d}||_2^2.
 \eq
-While this eliminates the need to store the full state variables for all $K$ experiments, evaluation of the objective and its gradient requires PDE-solves. Moreover, by eliminating the constraints we have dramatically reduced the search-space, thus arguably making it more difficult to find an appropriate minimizer. Note also that the dependency of the objective on $\mathbf{m}$ is now through $A(\mathbf{m})^{-1}\mathbf{q}$ in stead of through $A(\mathbf{m})\mathbf{u}$. For linear PDEs, the latter can often be made to depend linearly on $\mathbf{m}$ while the dependency of $A(\mathbf{m})^{-1}\mathbf{q}$ is much more complicated.
+While this eliminates the need to store the full state variables for all $K$ experiments, evaluation of the objective and its gradient requires PDE-solves. Moreover, by eliminating the constraints we have dramatically reduced the search-space, thus arguably making it more difficult to find an appropriate minimizer. Note also that the dependency of the objective on $\mathbf{m}$ is now through $A(\mathbf{m})^{-1}\mathbf{q}$ in stead of through $A(\mathbf{m})\mathbf{u}$. For linear PDEs, the latter can often be made to depend linearly on $\mathbf{m}$ while the dependency of $A(\mathbf{m})^{-1}\mathbf{q}$ on $\mathbf{m}$ is typically non-linear.
 
 \subsection{Motivation}
 The main motivation for this work is the observation that the stated inverse problem would be much easier to solve if we had a \emph{complete} measurement of the state (i.e., $P$ is invertible). In this case, we could reconstruct the state from the data as $\mathbf{u} = P^{-1}\mathbf{d}$ and subsequently recover the parameter by solving
@@ -96,7 +96,7 @@ where $\mbf{v}\in\mathbb{C}^{KN}$ is the Lagrange multiplier or adjoint-state va
 =\left(
 \begin{array}{c}
 G(\mbf{m},\mbf{u})^T\mathbf{v},\\
-A(\mathbf{m})^T\mathbf{v} + P^T(P\mathbf{u} - \mathbf{d}),\\
+A(\mathbf{m})^T\mathbf{v} + P^T\!(P\mathbf{u} - \mathbf{d}),\\
 A(\mathbf{m})\mathbf{u} - \mathbf{q},
 \end{array}
 \right),
@@ -124,7 +124,7 @@ These Jacobian matrices are typically sparse when $A$ is sparse and can be compu
 %tolerance, i.e. $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
 
 \subsection{All-at-once approach}
-So-called all-at-once approaches find such a stationary point by applying a Newton-like method to the Lagrangian \cite{Haber2000}. A basic algorithm for finding a startionary point of the Lagrangian up to a given tolerance $\epsilon$ is given in Algorithm \ref{alg:allatonce}. If the algorithm converges it returns iterates $(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)$ such that $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
+So-called all-at-once approaches find such a stationary point by applying a Newton-like method to the Lagrangian \cite{Haber2000,Haber2001}. A basic algorithm for finding a startionary point of the Lagrangian up to a given tolerance $\epsilon$ is given in Algorithm \ref{alg:allatonce}. If the algorithm converges it returns iterates $(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)$ such that $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
 %
 \begin{algorithm}
 \caption{Basic Newton algorithm for finding a stationary point of the Lagrangian via the all-at-once method}
@@ -157,12 +157,10 @@ So-called all-at-once approaches find such a stationary point by applying a Newt
 \end{algorithmic}
 \end{algorithm}
 %
-Many variants of Algorithm \ref{alg:allatonce} exist and may include preconditioning, inexact solves of the KKT system $\left(\nabla^2\mathcal{L}\right)^{-1}\nabla\mathcal{L}$ and a linesearch to ensure global convergence. For an extensive overview we refer to \cite{Herzog2010}.
+Many variants of Algorithm \ref{alg:allatonce} exist and may include preconditioning, inexact solves of the KKT system $\left(\nabla^2\mathcal{L}\right)^{-1}\nabla\mathcal{L}$ and a linesearch to ensure global convergence \cite{Haber2001,Biros,Grote2014}. For an extensive overview we refer to \cite{Herzog2010}.
 
 An advantage of such an all-at-once approach is that it eliminates the need to
 solve the PDEs explicitly; the constraints are only (approximately) satisfied upon convergence. However, such an approach is not feasible for the applications we have in mind because it involves simultaneously updating (and hence storing) all the variables.
-
-[INSERT MORE REFERENCES!?!]
 
 \subsection{Reduced approach}
 In inverse problems one usually considers a \emph{reduced} formulation that is obtained by eliminating the constraints from (\ref{eq:constr}). This results in an unconstrained optimization problem:
@@ -246,7 +244,7 @@ In the next two sections, we discuss a computationally efficient algorithm for s
 Using a quadratic penalty function, the constrained problem (\ref{eq:constr}) is reformulated as
 \bq
 \label{eq:rpenalty}
-\min_{\mbf{m},\mbf{u}} \mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2.
+\min_{\mbf{m},\mbf{u}} \left\{\mcl{P}(\mbf{m},\mbf{u}) = \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \ts{\frac{1}{2}}\lambda||A(\mbf{m})\mbf{u} - \mbf{q}||_2^2 \right\}.
 \eq
 The gradient and Hessian of $\mcl{P}$ are given by
 \bq
@@ -366,8 +364,7 @@ The former can be re-written as
 \[
 \mbf{u}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-T}P^T\!PA^{-1}\right)^{-1}\left(\mbf{q} + \lambda^{-1}A^{-T}P^T\mbf{d}\right).
 \]
-Let $\mu_1(A^{-T}P^T\!PA^{-1})$ denote the largest eigenvalue of $A^{-T}P^T\!PA^{-1}$.
-For $\lambda>\mu_1(A^{-T}P^T\!PA^{-1})$ we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$,
+For $\lambda>\|A^{-T}P^T\|_2^2$ we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$,
 and find that
 \bq
 \mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
@@ -384,7 +381,7 @@ We immediately find
 
 \begin{remark}
 \label{remark}
-Lemma \ref{lemma} suggests a natural scaling for the penalty parameter, $\lambda > \mu_1(A^{-T}P^T\!PA^{-1})$ can be considered large, while $\lambda < \mu_1(A^{-T}P^T\!PA^{-1})$ can be considered small. 
+Lemma \ref{lemma} suggests a natural scaling for the penalty parameter, $\lambda > \|A^{-T}P^T\|_2^2$ can be considered large, while $\lambda < \|A^{-T}P^T\|_2^2$ can be considered small. 
 \end{remark}
 
 \begin{theorem}
@@ -403,7 +400,7 @@ for any $\mbf{m}$
 \mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P(P\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
 &=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P(P\mbf{u}_{\lambda} - \mbf{d}) = 0.
 \eq
-Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\mu_{1}(A^{-T}P^T\!PA^{-1})$ presented in Lemma \ref{lemma}, we find
+Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\|A^{-T}P^T\|_2^2$ presented in Lemma \ref{lemma}, we find
 \bq
 \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\nonumber\\
 &=& \lambda^{-1}\mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-2}).
@@ -428,7 +425,7 @@ and hence that
 \qed
 \end{proof}
 
-This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. In order to reach a given tolerance, we need $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be small compared to $$
+This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. In order to reach a given tolerance, we need $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be small compared to $\|\mcl{L}_{\mbf{m}}\|_2$. This condition can easily be verified for a given $\mathbf{m}$ and thus serve as the basis for a selection criterion for $\lambda$.
 
 Next, we derive an expression for the distance of the final iterate of algorithm \ref{alg:penalty}, $\mbf{m}^*_{\lambda}$, to a stationary point of the Lagrangian, $\mbf{m}^*$ in terms of the chosen tolerance, $\epsilon$, and the data-error $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$. The expression of the form
 \[
@@ -438,7 +435,7 @@ allows us to analyze the convergence of the proposed method further.
 
 \begin{theorem}
 \label{theorem2}
-Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left( \widetilde{\epsilon} + \widetilde{\lambda}^{-1}\widetilde{\eta}\right)$ where $H$ is the reduced Gauss-Newton Hessian with condition number $\kappa(H)$ and largest eigenvalue $\mu_1(H)$, $\widetilde{\epsilon} = \epsilon/\mu_1(H)$ is the scaled tolerance, $\widetilde{\eta} = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2/\sqrt{\mu_1(H)}$ is the scaled data-error and $\widetilde{\lambda} = \lambda / \mu_1(A^{-T}P^TPA^{-1})$ is the scaled penalty paramater.
+Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left( \widetilde{\epsilon} + \widetilde{\lambda}^{-1}\widetilde{\eta}\right)$ where $H$ is the reduced Gauss-Newton Hessian with condition number $\kappa(H)$, $\widetilde{\epsilon} = \epsilon/\|H\|_2$ is the scaled tolerance, $\widetilde{\eta} = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2/\sqrt{\|H\|_2}$ is the scaled data-error and $\widetilde{\lambda} = \lambda / \|PA^{-1}\|_2^2$ is the scaled penalty paramater.
 \end{theorem}
 \begin{proof}
 We expand the gradient of the Lagrangian at the stationary point as
@@ -502,23 +499,23 @@ H = R - K^TA^{-1}G-G^TA^{-T}K + G^TA^{-T}P^TPA^{-1}G
 \]
 is the reduced Hessian and
 \[
-F = G^TA^{-T}P^TPA^{-1} - K^TA^{-1}.
+F = G^T\!A^{-T}\!P^T\!PA^{-1} - K^TA^{-1}.
 \]
 Expressing $\mbf{v}^*$ as
 \[
-\mbf{v} = A^{-T}P^T\left(\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\right),
+\mbf{v} = A^{-T}\!P^T\!\left(\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\right),
 \]
 and ignoring the second order terms in $H$ and $F$, i.e, 
 \[
-H \approx G^TA^{-T}P^TPA^{-1}G,
+H \approx G^T\!A^{-T}\!P^T\!PA^{-1}G,
 \]
 and
 \[
-F \approx G^TA^{-T}P^TPA^{-1}
+F \approx G^T\!A^{-T}\!P^T\!PA^{-1}
 \]
 we find
 \[
-\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq ||H^{-1}||_2\left(\epsilon +  \widetilde{\lambda}^{-1} \|G^TA^{-T}P^T\|_2\eta\right),
+\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq ||H^{-1}||_2\left(\epsilon +  \widetilde{\lambda}^{-1} \|G^T\!A^{-T}\!P^T\|_2\eta\right),
 \]
 where $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$ denotes the data-error.
 
@@ -534,6 +531,7 @@ Introducing the scaled tolerance and data-error we express this as
 %\]
 %As long as the error $\|\nabla\phi(\mbf{m}^*_\lambda) - \nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ is small compared to $\|\nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ we may expect that Algorithm \ref{alg:penalty} yields a stationary point of the Lagrangian within the desired tolerance. 
 %\end{remark}
+[REMARK]
 
 \section{Algorithm}
 \label{algorithm}
@@ -595,12 +593,11 @@ An important aspect of the proposed method is the choice of the penalty paramete
 We can easily keep track of this quantity -- at no significant additional computational cost -- during the iterations and increase $\lambda$ as needed. Initialization can be done by directly enforcing $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be some fraction of $\|\mcl{L}_{\mbf{m}}\|_2$ at the initial iterate. A natural scaling for $\lambda$ is suggested by Lemma \ref{lemma1}: $\lambda = \widetilde{\lambda}\mu_1(A^{-T}P^TPA^{-1})$.
  
 \subsection{Complexity estimates}
-Assuming we can solve the overdetermined system (\ref{eq:u_pen}) as efficiently as
-the original PDE, the evaluation of the gradient requires a factor of 2 less
-computation and storage as the gradient in the reduced approach. 
-A summary of the leading order computational costs \emph{per iteration} of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}. 
+Although the exact computational cost will depend heavily on the chosen application, we 
+have argued that it is plausible that the augmented system can be solved as efficiently as the original PDE. A summary of the leading order computational costs \emph{per iteration} of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}. 
+The storage and computation required for the reduced and penalty methods are of the same order in terms of $K,N$ and $M$. The PDE-solves in both the penalty and reduced approaches can be done independently and in parallel. This makes these approaches more attractive for large-scale problems from a computational point-of-view.
 
-It is not clear how the methods will compare in the required number of iterations, though we expect that for small $\lambda$ the optimization problem is less non-linear and hence easier to solve. To reach a given tolerance, however, we need a continuation strategy in $\lambda$, adding to the cost of the penalty method.
+It is not clear how the penalty and reduced methods will compare in the required number of iterations, though we expect that for small $\lambda$ the optimization problem is less non-linear and hence easier to solve. To reach a given tolerance with the penalty method, however, we need a continuation strategy in $\lambda$, adding to the cost of the penalty method. In the next section we compare the actual computational costs on a few test-cases.
 
 \section{Case studies}
 \label{examples}
