@@ -68,7 +68,7 @@ We give the above sketched method a sound theoretical basis by showing that it c
 the solution of which (theoretically) satisfies the optimality conditions of the constrained problem (\ref{eq:constr}) as $\lambda\rightarrow\infty$.
 Such reformulations of the constrained problem are well-known but are, to our best knowledge, not being applied to inverse problems. 
 
-The main contribution of this paper is the development of an efficient algorithm based on the penalty formulation for inverse problems and the insight that we can approximate the solution of the constrained problem (\ref{eq:constr}) up to arbitrary finite precision with a finite $\lambda$. The numerical experiments suggest that a single fixed value of $\lambda$ is typically sufficient.
+The main contribution of this paper is the development of an efficient algorithm based on the penalty formulation for inverse problems and the insight that we can approximate the solution of the constrained problem (\ref{eq:constr}) up to arbitrary finite precision with a finite $\lambda$. In (ill-posed) inverse problems, we often do not require very high precision because we can only hope to resolve certain components of $\mathbf{m}$ anyway. We can understand this by realizing that not all constraints are equally important; those that constrain the null-space components of $\mathbf{m}$ need not be enforced as strictly. Thus, the parameter $\lambda$ need only be large enough to enforce these constraints. The numerical experiments suggest that a single fixed value of $\lambda$ is typically sufficient.
 
 Our approach is based on the elimination of the state variable, $\mbf{u}$, from (\ref{eq:pen}). This reduces the dimensionality of the optimization problem in a similar fashion as the \emph{reduced} approach (\ref{eq:red}) does for the constrained formulation (\ref{eq:constr}) by solving $K$ systems of equations. This elimination leads to a cost function $\phi_{\lambda}(\mathbf{m})$ whose gradient and Hessian can be readily computed. The main difference is that the state $\mathbf{u}$ in this case is not defined by solving the PDE, but instead is solved from an overdetermined system that involves both the PDE \emph{and} the data (\ref{eq:apuqd}). Due to the special block-structure of the problems under consideration, this elimination can be done efficiently, leading to a tractable algorithm. Contrary to the conventional \emph{reduced} approach, the resulting algorihtm does \emph{not} enforce the constraints at each iteration and arguably leads to a less non-linear problem in $\mbf{m}$. It is outside the scope of the current paper to give a rigorous proof of this statement, but we present some numerical evidence to support this conjecture.
 
@@ -291,8 +291,7 @@ The optimization problem for the state (\ref{eq:ul}) has a closed-form solution:
 \[
 \mbf{u}_{\lambda} = \left(A(\mathbf{m})^T\!A(\mathbf{m}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m})^T\mbf{q} + \lambda^{-1}P\mbf{d}\right).
 \]
-The modified system $A^T\!A + \lambda^{-1}P^T\!P$ is a low-rank update of the original PDE and
-incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); the estimate of the state is not only based on the physics and the current model, but also on the data.
+The modified system $A^T\!A + \lambda^{-1}P^T\!P$ is a low-rank update of the original PDE and incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); the estimate of the state is not only based on the physics and the current model, but also on the data.
 
 Following \cite[Thm. 1]{Aravkin2012c}, it is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are given by 
 \bq
@@ -427,6 +426,8 @@ and hence that
 
 This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. In order to reach a given tolerance, we need $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be small compared to $\|\mcl{L}_{\mbf{m}}\|_2$. This condition can easily be verified for a given $\mathbf{m}$ and thus serve as the basis for a selection criterion for $\lambda$.
 
+In an ill-posed inverse problem, we can only hope to reconstruct a few components of $\mathbf{m}^*$, roughly corresponding the dominant eigenvectors of the reduced Hessian. Thus, the tolerance $\epsilon$ can be quite large, even for an acceptable reconstruction. Driving down the norm of the gradient any further would only refine the reconstruction in the eigenmodes corresponding to increasingly small eigenvalues and would hardly affect the final reconstruction. 
+
 Next, we derive an expression for the distance of the final iterate of algorithm \ref{alg:penalty}, $\mbf{m}^*_{\lambda}$, to a stationary point of the Lagrangian, $\mbf{m}^*$ in terms of the chosen tolerance, $\epsilon$, and the data-error $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$. The expression of the form
 \[
 \|\mbf{m}_\lambda^* - \mbf{m}^*\|_2 \leq \alpha\cdot\epsilon + \lambda^{-1}\beta\cdot\eta
@@ -531,9 +532,10 @@ Introducing the scaled tolerance and data-error we express this as
 %\]
 %As long as the error $\|\nabla\phi(\mbf{m}^*_\lambda) - \nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ is small compared to $\|\nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ we may expect that Algorithm \ref{alg:penalty} yields a stationary point of the Lagrangian within the desired tolerance. 
 %\end{remark}
-In an ill-posed inverse problem, we can only hope to reconstruct a few components of $\mathbf{m}^*$, given by the dominant eigenvectors
-of $H$. Thus, even for an acceptable reconstruction, the error $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ can be relatively large. We expect the penalty method
-to yield an acceptable reconstruction when $\widetilde{\lambda}^{-1} \widetilde{\eta}$ is small compared to $\widetilde{\epsilon}$.
+As noted before, we can only hope to reconstruct a few components of $\mathbf{m}^*$, given by the dominant eigenvectors
+of $H$. Thus, even for an acceptable reconstruction, the error $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ can be relatively large. The data-error for the corresponding $\mathbf{m}_{\lambda}^*$ can be quite small, even if $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ is large. 
+We expect the penalty method
+to yield an acceptable reconstruction when $\widetilde{\lambda}^{-1} \widetilde{\eta}$ is small compared to $\widetilde{\epsilon}$. 
 
 
 \section{Algorithm}
