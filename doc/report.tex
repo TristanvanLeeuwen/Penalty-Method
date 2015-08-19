@@ -364,7 +364,7 @@ The former can be re-written as
 \[
 \mbf{u}_{\lambda} = A^{-1}\left(I + \lambda^{-1}A^{-T}P^T\!PA^{-1}\right)^{-1}\left(\mbf{q} + \lambda^{-1}A^{-T}P^T\mbf{d}\right).
 \]
-For $\lambda>\|A^{-T}P^T\|_2^2$ we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$,
+For $\lambda>\|PA^{-1}\|_2^2$ we may expand the inverse as $(I + \lambda^{-1}B)^{-1} \approx I - \lambda^{-1}B + \lambda^{-2}B^2 + \ldots$,
 and find that
 \bq
 \mbf{u}_{\lambda} &=& A^{-1}\mbf{q}\nonumber\\
@@ -381,7 +381,7 @@ We immediately find
 
 \begin{remark}
 \label{remark}
-Lemma \ref{lemma} suggests a natural scaling for the penalty parameter, $\lambda > \|A^{-T}P^T\|_2^2$ can be considered large, while $\lambda < \|A^{-T}P^T\|_2^2$ can be considered small. 
+Lemma \ref{lemma} suggests a natural scaling for the penalty parameter, $\lambda > \|PA^{-1}\|_2^2$ can be considered large, while $\lambda < \|PA^{-1}\|_2^2$ can be considered small. 
 \end{remark}
 
 \begin{theorem}
@@ -400,7 +400,7 @@ for any $\mbf{m}$
 \mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P(P\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
 &=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P(P\mbf{u}_{\lambda} - \mbf{d}) = 0.
 \eq
-Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\|A^{-T}P^T\|_2^2$ presented in Lemma \ref{lemma}, we find
+Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\|PA^{-1}\|_2^2$ presented in Lemma \ref{lemma}, we find
 \bq
 \mcl{L}_{\mathbf{v}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})\mbf{u}_{\lambda} - \mbf{q}\nonumber\\
 &=& \lambda^{-1}\mbf{v}_{\mathrm{red}} + \mcl{O}(\lambda^{-2}).
@@ -531,14 +531,18 @@ Introducing the scaled tolerance and data-error we express this as
 %\]
 %As long as the error $\|\nabla\phi(\mbf{m}^*_\lambda) - \nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ is small compared to $\|\nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ we may expect that Algorithm \ref{alg:penalty} yields a stationary point of the Lagrangian within the desired tolerance. 
 %\end{remark}
-[REMARK]
+In an ill-posed inverse problem, we can only hope to reconstruct a few components of $\mathbf{m}^*$, given by the dominant eigenvectors
+of $H$. Thus, even for an acceptable reconstruction, the error $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ can be relatively large. We expect the penalty method
+to yield an acceptable reconstruction when $\widetilde{\lambda}^{-1} \widetilde{\eta}$ is small compared to $\widetilde{\epsilon}$.
+
 
 \section{Algorithm}
 \label{algorithm}
 In this section, we discuss some practicalities of the implementation of algorithm \ref{alg:penalty}. We slightly elaborate the notation to explicitly 
-reveal the multi-experiment structure of the problem. In this case, the data are acquired in a series of $K$ independent experiments and $\mbf{d} = [\mbf{d}_1; \ldots; \mbf{d}_{K}]$ is a block-vector. We partition the states and sources in a similar manner and, since the experiments are independent, the system matrix $A$ is block-diagonal matrix with $K$ blocks $A_i(\mbf{m})$ of size $N\times N$. Similarly, the matrix $P$ consists of blocks $P_i$. Recall that we collect $L$ independent measurements for each experiment, so the matrices $P_i\in\mathbb{R}^{N\times L}$ have full rank.
+reveal the multi-experiment structure of the problem. In this case, the data are acquired in a series of $K$ independent experiments and $\mbf{d} = [\mbf{d}_1; \ldots; \mbf{d}_{K}]$ is a block-vector. We partition the states and sources in a similar manner. Since the experiments are independent, the system matrix $A$ is block-diagonal matrix with $K$ blocks $A_i(\mbf{m})$ of size $N\times N$. Similarly, the matrix $P$ consists of blocks $P_i$. Recall that we collect $L$ independent measurements for each experiment, so the matrices $P_i\in\mathbb{R}^{N\times L}$ have full rank.
 
 \subsection{Solving the augmented PDE}
+\label{solving}
 Due to the block structure of the problem, the linear systems can be solved independently.
 We can obtain the state $\mathbf{u}_i$ by solving the following inconsistent overdetermined system
 \bq
@@ -578,30 +582,30 @@ are shown in figures \ref{fig:example2} and \ref{fig:example3}. These show that 
 that iterative methods will perform similarly on the augmented system as they would on the original system. \emph{How} to effectively precondition the augmented system given a good preconditioner for the original system is a different matter which is outside the scope of this paper.
 
 \textbf{Direct methods:} When the matrix has additional structure we might actually prefer a direct method over an iterative method. An example is explicit time-stepping, where the system matrix $A$ exhibits a lower-triangular block-structure. In this case the action of $A^{-1}$ can be computed efficiently via forward substitution, requiring storage of only a few time-slices of the state. The adjoint system $A^{-T}$ can be solved by backward substitution, however, the full time-history of the state variable is needed to compute the gradient.
-For the penalty method, the augmented system $A^T\!A + P^T\!P$ will have a banded structure and the system can be solved using a block version of the Thomas algorithm, which again would require storage of the full time-history. So even in this setting it seems possible to apply the penalty method at roughly the same per-iteration complexity as the reduced method.
+For the penalty method, the augmented system $A^T\!A + \lambda^{-1}P^T\!P$ will have a banded structure and the system can be solved using a block version of the Thomas algorithm, which again would require storage of the full time-history. So even in this setting it seems possible to apply the penalty method at roughly the same per-iteration complexity as the reduced method.
 
 \subsection{Gradient and Hessian computation}
 Given these solutions $\mbf{u}_k$ of (\ref{eq:u_pen}), the gradient, $\mbf{g}_{\lambda}$ and Gauss-Newton Hessian $H_{\lambda}$ of $\phi_{\lambda}$ are given by (cf eqs. \ref{eq:gradpen}-\ref{eq:hesspen})
 \bq
-\mbf{g}_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\left(A_k\mathbf{u}_{k} - \mathbf{q}_{k}\right),\\
-H_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\left(I - A_k\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)^{-1}A_k^T \right)G_k,
+\mbf{g}_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\!\left(A_k\mathbf{u}_{k} - \mathbf{q}_{k}\right),\\
+H_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\!\left(I - A_k\left(A_k^T\!A_k + \lambda^{-1}P_k^T\!P_k\right)^{-1}A_k^T \right)G_k,
 \eq
 where $G_k = G(\mbf{m},\mbf{u}_k)$. We can compute the inverse of $\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)$ in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the gradient on the fly. 
 
 \subsection{Choosing $\lambda$}
 An important aspect of the proposed method is the choice of the penalty parameter, $\lambda$. Theorem \ref{theorem1} essentially states that we can expect to find a stationary point of the Lagrangian within finite accuracy with finite $\lambda$ as long as $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ is small compared to $\|\mcl{L}_{\mbf{m}}\|_2$.
-We can easily keep track of this quantity -- at no significant additional computational cost -- during the iterations and increase $\lambda$ as needed. Initialization can be done by directly enforcing $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be some fraction of $\|\mcl{L}_{\mbf{m}}\|_2$ at the initial iterate. A natural scaling for $\lambda$ is suggested by Lemma \ref{lemma1}: $\lambda = \widetilde{\lambda}\mu_1(A^{-T}P^TPA^{-1})$.
+We can easily keep track of this quantity -- at no significant additional computational cost -- during the iterations and increase $\lambda$ as needed. Initialization can be done by directly enforcing $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be some fraction of $\|\mcl{L}_{\mbf{m}}\|_2$ at the initial iterate. A natural scaling for $\lambda$ is suggested by Lemma \ref{lemma}: $\lambda = \widetilde{\lambda}\mu_1(A^{-T}P^TPA^{-1})$.
  
 \subsection{Complexity estimates}
-Although the exact computational cost will depend heavily on the chosen application, we 
-have argued that it is plausible that the augmented system can be solved as efficiently as the original PDE. A summary of the leading order computational costs \emph{per iteration} of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}. 
+A summary of the leading order computational costs \emph{per iteration} of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}. 
 The storage and computation required for the reduced and penalty methods are of the same order in terms of $K,N$ and $M$. The PDE-solves in both the penalty and reduced approaches can be done independently and in parallel. This makes these approaches more attractive for large-scale problems from a computational point-of-view.
 
-It is not clear how the penalty and reduced methods will compare in the required number of iterations, though we expect that for small $\lambda$ the optimization problem is less non-linear and hence easier to solve. To reach a given tolerance with the penalty method, however, we need a continuation strategy in $\lambda$, adding to the cost of the penalty method. In the next section we compare the actual computational costs on a few test-cases.
+We have argued in section \ref{solving} that it is plausible that the augmented system can be solved as efficiently as the original PDE. However,
+it is not clear how the penalty and reduced methods will compare in the required number of iterations, though we expect that for small $\lambda$ the optimization problem is less non-linear and hence easier to solve. To reach a given tolerance with the penalty method, however, we need a continuation strategy in $\lambda$, adding to the cost of the penalty method. In the next section we compare the actual computational costs on a few test-cases.
 
 \section{Case studies}
 \label{examples}
-The following experiments are done in Matlab, using direct factorization to solve the PDEs (with Matlab \texttt{slash}). We consider both a Gauss-Newton (GN) and a Quasi-Newton (QN) variant of the algorithms and use a weak Wolfe linesearch to determine the steplength. In the GN method the Hessian is inverted using conjugate gradients (\texttt{pcg}) up to a relative tolerance of $\eta$. The matrix-vector products are computed on the fly. For the QN method we use the L-BFGS inverse Hessian with a history size of 5 \cite{Nocedal}. We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}. In all experiments, we set $\lambda$ relative to the largest eigenvalue of $A^{-T}P^T\!PA^{-1}$ at the initial iterate. This scaling is justified by remark \ref{remark}. We compare the results for various fixed values of $\lambda$ and additionally show the results for an ad-hoc continuation strategy; performing a few iterations for increasing values of $\lambda$ using the result for each $\lambda$ as initial guess for the next. 
+The following experiments are done in Matlab, using direct factorization to solve the PDEs (with Matlab \texttt{slash}). We consider both a Gauss-Newton (GN) and a Quasi-Newton (QN) variant of the algorithms and use a weak Wolfe linesearch to determine the steplength. In the GN method the Hessian is inverted using conjugate gradients (\texttt{pcg}) up to a relative tolerance of $\delta$. The matrix-vector products are computed on the fly. For the QN method we use the L-BFGS inverse Hessian with a history size of 5 \cite{Nocedal}. We measure the cost of the inversion by counting the number of PDE solves as outlined in table \ref{table:costs}. In all experiments, we set $\lambda$ relative to the largest eigenvalue of $A^{-T}P^T\!PA^{-1}$ at the initial iterate. This scaling is justified by lemma \ref{lemma}. We compare the results for various fixed values of $\lambda$ and additionally show the results for an ad-hoc continuation strategy; performing a few iterations for increasing values of $\lambda$ using the result for each $\lambda$ as initial guess for the next.
 
 To avoid the inverse crime, we compute the data for the ground truth model on a finer grid than used for the inversion. 
 
@@ -619,7 +623,7 @@ We consider the PDE
 \bq
 \partial_t u(t,x) = \partial_x\left(m(x)\partial_x\right) u(t,x),
 \eq
-on the domain $x = [0,1]$ with Neumann boundary conditions. 
+on the domain $x \in [0,1]$ with Neumann boundary conditions. 
 A finite-difference discretization in the temporal Fourier domain gives
 \bq
 A(\mbf{m}) = \imath\omega\mathsf{diag}(\mbf{w}) + D^T\mathsf{diag}(\mbf{m})D,
@@ -641,11 +645,11 @@ G(\mbf{m},\mbf{u}) = D^T\mathsf{diag}(D\mbf{u}).
 The ground-truth model is $m(x) = 1+e^{-10(x-1/2)^2}$ and we locate two sources and receivers on either end of the domain. The data are generated on a grid with $N=201$ points and we have $K=L=2$.
 
 For the inversion we use $N=101$ points.
-We use a GN method with $\epsilon=10^{-9}$, $\eta=10^{-3}$ and include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 10^{-6}$.
+We use a GN method with $\epsilon=10^{-9}$, $\delta=10^{-3}$ and include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 10^{-6}$.
 The initial parameters are $\mbf{m}^0 = \mbf{1}$.
 
 The results are shown in figure \ref{fig:1D_exp1}. The convergence plot, figure \ref{fig:1D_exp1} (a), shows the predicted behaviour of the penalty method; the norm
-of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$. The convergence of the continuation strategy shows that it is possible to reach the desired tolerance by gradually increasing $\lambda$. The resulting parameter estimates are very similar as can be seen 
+of the gradient of the Laplacian stalls at $\mcl{O}(\lambda^{-1})$. The convergence of the continuation strategy shows that it is possible to reach the desired tolerance by gradually increasing $\lambda$ (using $\lambda = \{0.1, 1, 10, 100\}$ with a few iterations each). The resulting parameter estimates are very similar as can be seen 
 in figure \ref{fig:1D_exp1} (b). The actual costs of the inversion are listed in table \ref{table:1D_exp1}. The computational cost for the various approaches are of the same order of magnitude, except for $\lambda=10$, where more than twice as many iterations are required. 
 
 \subsection{2D Acoustic tomography}
@@ -658,7 +662,7 @@ where $n(x)$ is the outward normal vector.
 
 Discretization in the temporal Fourier domain leads to a scalar Helmholtz equation
 \bq
-A(\mbf{m}) = \mathsf{diag}(\mbf{s}) - D^TD,
+A(\mbf{m}) = \mathsf{diag}(\mbf{s}) - D^T\!D,
 \eq
 where $D = [I_2\otimes D_1; D_2\otimes I_1]$ with $D_i$ the $(N_i-1)\times N_i$ finite-difference matrix, $I_i$ the $N_i\times N_i$ identity matrix
 and $s_i = \omega^2 m_i$ in the interior and $s_i = \omega^2 m_i/2 + \imath\omega\sqrt{m_i}/h$ on the boundary.
@@ -672,29 +676,30 @@ The observation matrix $P$ samples the solution at the receiver locations using 
 
 \subsubsection{Ultrasound tomography}
 
-The domain $\Omega = [0,1]\times [0,1]$ $m$  is discretized using $N_1\times N_2$ points. 
+The domain $\Omega = [0,1]\times [0,1]$ m is discretized using $N_1\times N_2$ points. 
 The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure  \ref{fig:2D_model}. We use a single frequency of $5$ kHz (i.e., $\omega = 10^4\pi$). The data for the ground-truth model are generated using $N_1=N_2=101$ while the following experiments are done with $N_1=N_2=51$.
 
 \textbf{Non-linearity:}
-First, we investigate the sensitivity of the misfit functions $\phi$ and $\phi_{\lambda}$ by plotting $\phi(\mbf{m}^* + \delta_1 \mbf{v}_1 + \delta_2\mbf{v}_2)$ and $\phi_{\lambda}(\mbf{m}^* + \delta_1 \mbf{v}_1 + \delta_2\mbf{v}_2)$ as a function of $(\delta_1,\delta_2)$. 
-We take $\mbf{v}_1, \mbf{v}_2$ to be slowly oscillatory modes as shown in figure \ref{fig:2D_exp0a}. The misfit as a function of $(\delta_1,\delta_2)$ is shown in figure \ref{fig:2D_exp0b}. We see a radically different behaviour for the reduced and penalty methods.
+First, we investigate the sensitivity of the misfit functions $\phi$ and $\phi_{\lambda}$ by plotting $\phi(\mbf{m}^* + a_1 \mbf{v}_1 + a_2\mbf{v}_2)$ and $\phi_{\lambda}(\mbf{m}^* + a_1 \mbf{v}_1 + a_2\mbf{v}_2)$ as a function of $(a_1,a_2)$. 
+We take $\mbf{v}_1, \mbf{v}_2$ to be slowly oscillatory modes as shown in figure \ref{fig:2D_exp0a}. The misfit as a function of $(a_1,a_2)$ is shown in figure \ref{fig:2D_exp0b}. We see a radically different behaviour for the reduced and penalty methods.
 
 The first exhibits strong non-linearity and some spurious stationary points while for small $\lambda$ the penalty misfit is much better behaved. For larger values $\lambda$ the penalty misfit starts to behave more like the reduced misfit as expected.
 
 \textbf{Inversion:}
-For the inversion, we include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 2$ and compare  the GN method ($\epsilon=10^{-6}$, $\eta=10^{-1}$) to the QN method ($\epsilon=10^{-6}$). The initial parameter $\mathbf{m}_0$ is constant at $\frac{1}{4}$ $s^2/m^2$.
+For the inversion, we include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 2$ and compare  the GN method ($\epsilon=10^{-6}$, $\delta=10^{-1}$) to the QN method ($\epsilon=10^{-6}$). The initial parameter $\mathbf{m}_0$ is constant at $\frac{1}{4}$ $s^2/m^2$.
 
 The results for the GN method are shown in figure \ref{fig:2D_exp1}.
-The convergence history, figure \ref{fig:2D_exp1} (top, left), shows the predicted behaviour of the penalty method; the norm of the gradient of the Lagrangian stalls at $\mcl{O}(\lambda^{-1})$ when using the penalty method. The convergence history of the continuation strategy shows that is possible to reach the desired tolerance by gradually increasing $\lambda$. Figure \ref{fig:2D_exp1} (top, right) shows that the methods perform similarly in terms of reconstruction error. The resulting parameter estimates are very similar as can be seen 
-in figure \ref{fig:2D_exp1} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}. The penalty method converges in less iterations and uses less PDE solves. Note that all methods start overfitting after a few iterations. This can be countered by including more appropriate regularization or stopping the iterations early. The point here is to show that the penalty method gives simular results as the reduced method.
+The convergence history, figure \ref{fig:2D_exp1} (top, left), shows the predicted behaviour of the penalty method; the norm of the gradient of the Lagrangian stalls at $\mcl{O}(\lambda^{-1})$ when using the penalty method. The convergence history of the continuation strategy shows that is possible to reach the desired tolerance by gradually increasing $\lambda$ (using $\lambda = \{0.1, 1, 10, 100, 1000\}$ with a few iterations each). Figure \ref{fig:2D_exp1} (top, right) shows that the methods perform similarly in terms of reconstruction error. The resulting parameter estimates are very similar as can be seen 
+in figure \ref{fig:2D_exp1} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}. The penalty method converges to the same error $\|\mathbf{m}^k - \mathbf{m}^*\|$ in less iterations and uses less PDE solves. Note that all methods start overfitting after a few iterations. This can be countered by including more appropriate regularization or stopping the iterations early. The point here is to show that the penalty method gives similar results as the reduced method.
 
 The results for the QN method are shown in figure \ref{fig:2D_exp2}. The convergenge history shows the same behaviour as the previous experiment. The costs of the inversion, shown in table \ref{table:2D_exp2}, are slightly less than those of the GN method. As with the GN method, the penalty method converges in less iterations and uses less PDE solves per iterations. 
 
 \textbf{Sensitivity to noise:}
-Results for the QN method on data with 10\% Gaussian noise are shown in figure  \ref{fig:2D_exp3}. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. These results show that the penalty approach is not overly sensitive to noise and gives very similar --even slightly better-- results compared to the reduced approach. Furthermore, we see that the penalty method stalls at a higher tolerance when the noise level is higher. This is consistent with the findings of Theorem \ref{theorem2}, which states that the norm of the gradient is bounded from above by an $\mcl{O}(\lambda^{-1})$ term and a term containing the noise level.
+Results for the QN method on data with 10\% Gaussian noise are shown in figure  \ref{fig:2D_exp3}. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. These results show that the penalty approach is not overly sensitive to noise and gives very similar --even slightly better-- results compared to the reduced approach. 
+%Furthermore, we see that the penalty method stalls at a higher tolerance when the noise level is higher. This is consistent with the findings of Theorem \ref{theorem2}, which states that the norm of the gradient is bounded from above by an $\mcl{O}(\lambda^{-1})$ term and a term containing the noise level.
 
 \subsubsection{Seismic tomography}
-Here, the domain $\Omega = [0,5]\times [0,20]$ $km$ is discretized using $N_1\times N_2$ points. The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure \ref{fig:overthrust_model}. We use a frequency of $2 Hz$ (i.e., $\omega = 4\pi$). The data for the ground-truth are generated using $N_1=101, N_2=401$ while the following experiments are done with $N_1=51, N_2=201$. 
+Here, the domain $\Omega = [0,5]\times [0,20]$ km is discretized using $N_1\times N_2$ points. The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure \ref{fig:overthrust_model}. We use a frequency of $2$ Hz (i.e., $\omega = 4\pi$). The data for the ground-truth are generated using $N_1=101, N_2=401$ while the following experiments are done with $N_1=51, N_2=201$. 
 
 \textbf{Sensitivity to the initial guess}
 For the inversion, we include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 5$ and use the QN method ($\epsilon=10^{-6}$). We will use two different initial guesses, I and II, depicted in figure \ref{fig:overthrust_model}, and see whether the methods converge to the same final iterate. Initial iterate I is much closer to the ground truth than the initial iterate II. This can also be observed when looking at the data produced by these iterates. The first initial iterate produces data that differs only slightly from the observed data and inversion is considered to be easy. The second initial iterate produces data that is shifted significantly with respect to the observed data and inversion is considered to be difficult.
@@ -709,11 +714,11 @@ These experiments suggests that the penalty method indeed mitigates some of the 
 \label{discussion}
 This paper lays out the basics of an efficient implementation of the penalty method for PDE-constrained optimization problems arising in inverse problems. While the initial results are promising, some aspects of the proposed method warrant further investigation.
 
-While the theoretical results suggest that the penalty approach can find a stationary point of the Lagrangian with finite precision with a finite $\lambda$, it is not clear how to choose a suitable value for $\lambda$ a priori. Our analysis and results suggest that choosing $\lambda$ to be a small fraction of the largest eigenvalue of $A^{-T}P^T\!PA^{-1}$ at the initial iterate yields good results. A more solid justification of this observation is needed to design robust algorithms.
+While the theoretical results suggest that the penalty approach can find a stationary point of the Lagrangian with finite precision with a finite $\lambda$, it is not clear how to choose a suitable value for $\lambda$ a priori. Our analysis and results suggest that choosing $\lambda$ to be a small fraction of $\|PA^{-1}\|_2^2$ at the initial iterate yields good results. A more solid justification of this observation is needed to design robust algorithms.
 
-Similarly, a continuation strategy for $\lambda$ is needed if we want to guarantee finding a stationary point of the Lagrangian with preset tolerance. A natural way to do this seems to by detecting when the penalty method stalls and subsequently reducing $\lambda$. The numerical results suggest that such an approach is viable, but further study is needed in order to develop a robust continuation strategy.
+A continuation strategy for $\lambda$ is needed if we want to guarantee finding a stationary point of the Lagrangian with preset tolerance. A natural way to do this seems to by detecting when the penalty method stalls and subsequently reducing $\lambda$. The numerical results suggest that such an approach is viable, but further study is needed in order to develop a robust continuation strategy.
 
-Finally, the Hessian of the penalty objective exhibits additional structure that could potentially be exploited. In particular, the penalty-method GN Hessian is full rank and allows for a natural sparse approximation $H_{\lambda} \approx \lambda G^TG$ (cf. equation \ref{eq:Hl}). The reduced GN Hessian, on the other hand, has rank of at most $ML$ and does not permit such a natural sparse approximation.
+Finally, the Hessian of the penalty objective exhibits additional structure that could potentially be exploited. In particular, the penalty-method GN Hessian is full rank and allows for a natural sparse approximation $H_{\lambda} \approx \lambda G^T\!G$ (cf. equation \ref{eq:Hl}). The reduced GN Hessian, on the other hand, has rank of at most $ML$ and does not permit such a natural sparse approximation.
 
 \section{Conclusions}
 \label{conclusion}
@@ -758,15 +763,14 @@ $N$	&   $10^3$  & $10^6$	&	$10^9$			\\
 \begin{table}
 \centering
 \input{./figs/example2}
-\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
-and $P_L$ is a restricted identify matrix of rank $L$. }
+\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath(10\pi) - \partial_x^2$ on $x\in [0,1]$ and $P_L$ is a restricted identity matrix of rank $L$. }
 \label{table:example2}
 \end{table}
 
 \begin{table}
 \centering
 \input{./figs/example3}
-\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 m + \partial_x^2$ and $P_L$ is a restricted identify matrix of rank $L$. }
+\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $(10\pi)^2 m + \partial_x^2$ on $x\in [0,1]$ and $P_L$ is a restricted identity matrix of rank $L$. }
 \label{table:example3}
 \end{table}
 
@@ -780,7 +784,7 @@ reduced  &  $2K $  &    $2N + M$     & solve matrix-free linear system in $M$ un
 \hline
 all-at-once&   0   &    $2KN + M$   &  solve sparse symmetric, possibly indefinite system in $(2KN + M) \times (2KN + M)$ unknowns \\ 
 \end{tabular}
-\caption{Leading order computation and storage costs per iteration of different methods; $K$ denotes the number of experiments and $N$ denotes the number of gridpoints and $M$ denotes the number of parameters.}
+\caption{Leading order computational and storage costs per iteration of different methods; $K$ denotes the number of experiments and $N$ denotes the number of gridpoints and $M$ denotes the number of parameters.}
 \label{table:costs}
 \end{table}
 
@@ -814,8 +818,8 @@ all-at-once&   0   &    $2KN + M$   &  solve sparse symmetric, possibly indefini
 \includegraphics[scale=.2]{./figs/example2_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
-\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath\omega - \partial_x\left(m(x)\partial_x\right)$
-and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
+\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath(10\pi) - \partial_x^2$ on $x\in [0,1]$
+and $P_L$ is a restricted identity matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
 \label{fig:example2}
 \end{figure}
 
@@ -827,8 +831,8 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/example3_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
-\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\omega^2 + \partial_x^2$
-and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
+\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $(10\pi)^2 m + \partial_x^2$ on $x\in [0,1]$
+and $P_L$ is a restricted identity matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
 \label{fig:example3}
 \end{figure}
 
@@ -839,7 +843,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.4]{./figs/1D_exp1_b}\\
 {\small (a)}&{\small (b)}\\
 \end{tabular}
-\caption{Solutions and convergence history for 1D resisivity problem. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
+\caption{Convergence history and reconstructions for 1D resisivity problem. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
 \label{fig:1D_exp1}
 \end{figure}
 
@@ -856,7 +860,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/2D_exp0_a}&
 \includegraphics[scale=.2]{./figs/2D_exp0_e}\\
 \end{tabular}
-\caption{Perturbations $\mathbf{v}_1$ and $\mathbf{v}_2$ used to plot the misfit $\phi(\mathbf{m}^* + \delta_1\mathbf{v}_1 + \delta_2\mathbf{v}_2)$ and $\phi_{\lambda}(\mathbf{m}^* + \delta_1\mathbf{v}_1 + \delta_2\mathbf{v}_2)$ in figure \ref{fig:2D_exp0b}.}
+\caption{Perturbations $\mathbf{v}_1$ and $\mathbf{v}_2$ used to plot the misfit $\phi(\mathbf{m}^* + a1\mathbf{v}_1 + a_2\mathbf{v}_2)$ and $\phi_{\lambda}(\mathbf{m}^* + a_1\mathbf{v}_1 + a_2\mathbf{v}_2)$ in figure \ref{fig:2D_exp0b}.}
 \label{fig:2D_exp0a}
 \end{figure}
 
@@ -888,7 +892,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/2D_exp1_i}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
-\caption{Convergence history, GN reconstruction error and reconstructions for data without noise. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
+\caption{Convergence history, reconstruction error and reconstructions for data without noise using a GN method. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
 \label{fig:2D_exp1}
 \end{figure}
 
@@ -906,7 +910,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/2D_exp2_i}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
-\caption{Convergence history, QN reconstruction error and reconstructions for data without noise. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
+\caption{Convergence history, reconstruction error and reconstructions for data without noise using a QN method. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
 \label{fig:2D_exp2}
 \end{figure}
 
@@ -924,7 +928,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/2D_exp3_i}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
-\caption{Convergence history, QN reconstruction error and reconstructions for data with 10\% Gaussian noise. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same. In fact, for small $\lambda$, result is even a little better.}
+\caption{Convergence history, reconstruction error and reconstructions for data with 10\% Gaussian noise using a QN method. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same. In fact, for small $\lambda$, result is even a little better.}
 \label{fig:2D_exp3}
 \end{figure}
 
@@ -942,7 +946,7 @@ and $P_L$ is a restricted identify matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/2D_exp4_i}\\
 {\small reduced}&{\small $\lambda=0.1$}&{\small $\lambda=1$}&{\small $\lambda=10$}\\
 \end{tabular}
-\caption{Convergence history, QN reconstruction error and reconstructions for data with 20\% Gaussian noise. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same. In fact, for small $\lambda$, result is even a little better.}
+\caption{Convergence history, reconstruction error and reconstructions for data with 20\% Gaussian noise using a QN method. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same. In fact, for small $\lambda$, result is even a little better.}
 \label{fig:2D_exp4}
 \end{figure}
 
