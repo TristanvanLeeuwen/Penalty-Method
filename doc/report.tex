@@ -29,7 +29,7 @@ where $\mathbf{m}\in\mathbb{R}^{M}$ represents the (gridded) parameter of intere
 Typically, measurements are made from multiple, say $K$, independent experiments,
 in which case $\mathbf{u} \in \mathbb{C}^{KN}$ is a block vector containing the state variables for all the experiments. Likewise, $\mathbf{q}\in \mathbb{C}^{KN}$ and $\mathbf{d}\in \mathbb{C}^{KL}$ are block vectors containing the right-hand-sides and observations for all experiments. The matrices $A(\mathbf{m})$ and $P$ will be block-diagonal matrices in this case. Typical sizes for $M,N,K,L$ for seismic inverse problems are listed in table \ref{table:sizes}.
 
-In practice, one usually includes a regularization term in the formulation (\ref{eq:constr}) to mitigate the ill-posedness of the problem. To simplify the discussion, however, we ignore such terms with the understanding that appropriate regularization terms can be added when required \cite{esser_automatic_2015}.
+In practice, one usually includes a regularization term in the formulation (\ref{eq:constr}) to mitigate the ill-posedness of the problem. To simplify the discussion, however, we ignore such terms with the understanding that appropriate regularization terms can be added when required.
 
 \subsection{All-at-once and reduced methods}
 In applications arising from inverse problems, the constrained problem (\ref{eq:constr}) is typically solved using the method of Lagrange multipliers \cite{Haber2000,Grote2014} or sequential quadratic programming (SQP) \cite{Dennis1998,Heinkenschloss2008}. This entails optimizing over both the parameters, states and the Lagrange multipliers (or adjoint-state variables) simultaneously. While such \emph{all-at-once} approaches are often very attractive from an optimization point-of-view, they are typically not feasible for large-scale problems since we cannot afford to store the state variables for all $K$ experiments simultaneously. Instead, the so-called \emph{reduced} approach is based on a (block) elimination of the constraints to formulate an unconstrained optimization problem over the parameters:
@@ -380,7 +380,7 @@ We immediately find
 
 \begin{remark}
 \label{remark}
-Lemma \ref{lemma} suggests a natural scaling for the penalty parameter, $\lambda > \|PA^{-1}\|_2^2$ can be considered large, while $\lambda < \|PA^{-1}\|_2^2$ can be considered small. 
+Lemma \ref{lemma} suggests a natural scaling for the penalty parameter; $\lambda > \|PA^{-1}\|_2^2$ can be considered large, while $\lambda < \|PA^{-1}\|_2^2$ can be considered small. 
 \end{remark}
 
 \begin{theorem}
@@ -428,11 +428,7 @@ This means we can use algorithm \ref{alg:penalty} to find a stationary point of 
 
 In an ill-posed inverse problem, we can only hope to reconstruct a few components of $\mathbf{m}^*$, roughly corresponding the dominant eigenvectors of the reduced Hessian. Thus, the tolerance $\epsilon$ can be quite large, even for an acceptable reconstruction. Driving down the norm of the gradient any further would only refine the reconstruction in the eigenmodes corresponding to increasingly small eigenvalues and would hardly affect the final reconstruction. 
 
-Next, we derive an expression for the distance of the final iterate of algorithm \ref{alg:penalty}, $\mbf{m}^*_{\lambda}$, to a stationary point of the Lagrangian, $\mbf{m}^*$ in terms of the chosen tolerance, $\epsilon$, and the data-error $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$. The expression of the form
-\[
-\|\mbf{m}_\lambda^* - \mbf{m}^*\|_2 \leq \alpha\cdot\epsilon + \lambda^{-1}\beta\cdot\eta
-\]
-allows us to analyze the convergence of the proposed method further.
+Next, we derive an expression for the distance of the final iterate of algorithm \ref{alg:penalty}, $\mbf{m}^*_{\lambda}$, to a stationary point of the Lagrangian, $\mbf{m}^*$ in terms of the chosen tolerance, $\epsilon$, and the data-error $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$. 
 
 \begin{theorem}
 \label{theorem2}
@@ -533,7 +529,7 @@ Introducing the scaled tolerance and data-error we express this as
 %As long as the error $\|\nabla\phi(\mbf{m}^*_\lambda) - \nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ is small compared to $\|\nabla\phi_{\lambda}(\mbf{m}^*_\lambda)\|_2$ we may expect that Algorithm \ref{alg:penalty} yields a stationary point of the Lagrangian within the desired tolerance. 
 %\end{remark}
 As noted before, we can only hope to reconstruct a few components of $\mathbf{m}^*$, given by the dominant eigenvectors
-of $H$. Thus, even for an acceptable reconstruction, the error $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ can be relatively large. The data-error for the corresponding $\mathbf{m}_{\lambda}^*$ can be quite small, even if $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ is large. 
+of $H$. Thus, even for an acceptable reconstruction, the error $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ can be relatively large. On the other hand, the data-error for the corresponding $\mathbf{m}_{\lambda}^*$ can be quite small, even if $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2$ is large. 
 We expect the penalty method
 to yield an acceptable reconstruction when $\widetilde{\lambda}^{-1} \widetilde{\eta}$ is small compared to $\widetilde{\epsilon}$. 
 
@@ -592,11 +588,11 @@ Given these solutions $\mbf{u}_k$ of (\ref{eq:u_pen}), the gradient, $\mbf{g}_{\
 \mbf{g}_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\!\left(A_k\mathbf{u}_{k} - \mathbf{q}_{k}\right),\\
 H_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\!\left(I - A_k\left(A_k^T\!A_k + \lambda^{-1}P_k^T\!P_k\right)^{-1}A_k^T \right)G_k,
 \eq
-where $G_k = G(\mbf{m},\mbf{u}_k)$. We can compute the inverse of $\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)$ in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the results on the fly. 
+where $G_k = G(\mbf{m},\mbf{u}_k)$. We can compute the inverse of $\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)$ in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the results on the fly. Moreover, the Gauss-Newton Hessian admits a natural sparse approximation $H_{\lambda} \approx \lambda\sum_{k=1}^K G_k^TG_k$ which has proved to work well in practice \cite{esser_automatic_2015}.
 
 \subsection{Choosing $\lambda$}
 An important aspect of the proposed method is the choice of the penalty parameter, $\lambda$. Theorem \ref{theorem1} essentially states that we can expect to find a stationary point of the Lagrangian within finite accuracy with finite $\lambda$ as long as $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ is small compared to $\|\mcl{L}_{\mbf{m}}\|_2$.
-We can easily keep track of this quantity -- at no significant additional computational cost -- during the iterations and increase $\lambda$ as needed. Initialization can be done by directly enforcing $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be some fraction of $\|\mcl{L}_{\mbf{m}}\|_2$ at the initial iterate. A natural scaling for $\lambda$ is suggested by Lemma \ref{lemma}: $\lambda = \widetilde{\lambda}\|PA^{-1}\|_2^2$, where $\widetilde{\lambda} > 1$ is considered large.
+We can easily keep track of this quantity -- at no significant additional computational cost -- during the iterations and increase $\lambda$ as needed. Initialization can be done by directly enforcing $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be some fraction of $\|\mcl{L}_{\mbf{m}}\|_2$ at the initial iterate. A natural scaling for $\lambda$ is suggested by Lemma \ref{lemma}; $\lambda = \widetilde{\lambda}\|PA^{-1}\|_2^2$, where $\widetilde{\lambda} > 1$ is considered large and $\widetilde{\lambda} < 1$ is considered small.
  
 \subsection{Complexity estimates}
 A summary of the leading order computational costs \emph{per iteration} of the penalty, reduced and all-at-once approaches is given in table \ref{table:costs}. 
@@ -616,7 +612,7 @@ In these experiments, we illustrate that the penalty method:
 \item converges to a stationary point of the Lagrangian within the predicted tolerance of $\mcl{O}(\lambda^{-1})$;
 \item can give practically the same or better results as the reduced method at a lower computational cost;
 \item is not overly sensitive to noise;
-\item leads to a less non-linear optimization problem than the conventional reduced approach.
+\item is less sensitive to the initial guess than the conventional approach.
 \end{itemize}
 The Matlab code used to perform the experiments is available from \url{https://github.com/tleeuwen/Penalty-Method}.
 
@@ -704,14 +700,13 @@ Results for the QN method on data with 10\% Gaussian noise are shown in figure  
 Here, the domain $\Omega = [0,5]\times [0,20]$ km is discretized using $N_1\times N_2$ points. The ground-truth $\mbf{m}^*$ as well as the source and receiver locations are shown in figure \ref{fig:overthrust_model}. We use a frequency of $2$ Hz (i.e., $\omega = 4\pi$). The data for the ground-truth are generated using $N_1=101, N_2=401$ while the following experiments are done with $N_1=51, N_2=201$. 
 
 \textbf{Sensitivity to the initial guess}
-For the inversion, we include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 5$ and use the QN method ($\epsilon=10^{-6}$). We will use two different initial guesses, I and II, depicted in figure \ref{fig:overthrust_model}, and see whether the methods converge to the same final iterate. Initial iterate I is much closer to the ground truth than the initial iterate II. This can also be observed when looking at the data produced by these iterates. The first initial iterate produces data that differs only slightly from the observed data and inversion is considered to be easy. The second initial iterate produces data that is shifted significantly with respect to the observed data and inversion is considered to be difficult.
+For the inversion, we include a regularization term $\frac{\alpha}{2} \|D\mbf{m}\|_2^2$ with $\alpha = 5$ and use the QN method ($\epsilon=10^{-6}$). We will use two different initial guesses, I and II, depicted in figure \ref{fig:overthrust_model}, and see whether the methods converge to the same final iterate. Initial iterate I is much closer to the ground truth than the initial iterate II. This can also be observed when looking at the data produced by these iterates. The first initial iterate produces data that differs only slightly from the observed data and inversion is considered to be easy. The second initial iterate produces data that is shifted significantly with respect to the observed data and inversion is considered to be difficult. It should be noted, however, that a significant source of the error in the initial model is the region near the surface ($z=0$). In practical applications, such large errors in this region of the model might not occur.
 
 The results for initial guess I (figure \ref{fig:overthrust_model}, middle) are shown in figure \ref{fig:2D_overthrust1}. We see that both the reduced and penalty methods converge to roughly the same final iterate and are able to fit the data equally well. Starting from initial guess II (figure \ref{fig:overthrust_model}, bottom), however, we see that the reduced and penalty methods converge to different final iterates. For small $\lambda$, however, the penalty method converges to roughly the same iterate as when starting from a better initial guess. Looking at the data-fit, we observe that the penalty method for small $\lambda$ is still able to fit the data perfectly while the reduced method is not. In seismology, this phenomenon is called \emph{cycle-skipping}.
 
 Figure \ref{fig:2D_overthrust3} shows the convergence of the methods in terms of the data misfit $\|P\mathbf{u} - \mathbf{d}\|_2$ and the distance to the constraint $\|A(\mathbf{m})\mathbf{u} - \mathbf{q}\|_2$. We observe that, when starting from initial guess I, both the penalty and reduced methods converge to approximately the same point. For initial guess II the penalty method for $\lambda=0.1$ and $\lambda=1$ needs a few more iterations, but still converges to the same point as for initial guess I. For $\lambda=10$ and the reduced method, however, the iterations stall at a relatively high data misfit.
 
-These experiments suggests that the penalty method indeed mitigates some of the non-linearity of the problem, allowing the optimization to converge to the same final iterate, even when the initial guess is further away from the ground truth.
-
+These experiments suggests that the penalty method indeed mitigates some of the non-linearity of the problem, allowing the optimization to converge to the same final iterate, even when the initial guess is further away from the ground truth. 
 \section{Discussion}
 \label{discussion}
 This paper lays out the basics of an efficient implementation of the penalty method for PDE-constrained optimization problems arising in inverse problems. While the initial results are promising, some aspects of the proposed method warrant further investigation.
@@ -719,6 +714,8 @@ This paper lays out the basics of an efficient implementation of the penalty met
 Even though the theoretical results suggest that the penalty approach can find a stationary point of the Lagrangian with finite precision with a finite $\lambda$, it is not clear how to choose a suitable value for $\lambda$ a priori. Our analysis and results suggest that choosing $\lambda$ to be a small fraction of $\|PA^{-1}\|_2^2$ at the initial iterate yields good results. A more solid justification of this observation is needed to design robust algorithms.
 
 A continuation strategy for $\lambda$ is needed if we want to guarantee finding a stationary point of the Lagrangian with preset tolerance. A natural way to do this seems to by detecting when the penalty method stalls and subsequently reducing $\lambda$. The numerical results suggest that such an approach is viable, but further study is needed in order to develop a robust continuation strategy.
+
+The penalty formulation essentially relaxes the constraints and therefore allows for errors in the physics as well as the data. As a result, the penalty formulation leads to reduced sensitivity of the final reconstruction to the initial guess. Further investigation is needed to characterize this robustness.  
 
 Finally, the Hessian of the penalty objective exhibits additional structure that could potentially be exploited. In particular, the penalty-method GN Hessian is full rank and allows for a natural sparse approximation $H_{\lambda} \approx \lambda G^T\!G$ (cf. equation \ref{eq:Hl}). The reduced GN Hessian, on the other hand, has rank of at most $ML$ and does not permit such a natural sparse approximation.
 
@@ -733,7 +730,7 @@ The main algorithmic difference with the conventional reduced approach is the wa
 
 The numerical examples show that very good results can be obtained by using even a single, relatively small, value of $\lambda$. An ad-hoc continuation strategy further shows that it is viable to gradually increase $\lambda$ in order to reach the desired tolerance.
 
-The numerical examples further show that by enlarging the search space, the optimzation problem may actually be less non-linear and that in some cases a better parameter reconstruction is obtained as compared to the conventional reduced approach. In particular, the results show that the penalty method is not overly sensitive to noise and less sensitive to the initial model than the conventional reduced approach. 
+The numerical examples further show that when using the penalty formulation, the optimzation problem may actually be less non-linear and that in some cases a better parameter reconstruction is obtained as compared to the conventional reduced approach. In particular, the results show that the penalty method is not overly sensitive to noise and less sensitive to the initial model than the conventional reduced approach. 
 
 Thus, the proposed approach is a viable alternative to the conventional reduced approach for solving inverse problems with PDE-constraints.
 

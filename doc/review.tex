@@ -13,14 +13,14 @@ The new/updated manuscript is well structured and well written. The authors expl
 \begin{itemize}
 \item I suggest the authors discuss any relevant research (if applicable) to the proposed method. 
 
-\vspace{5mm}\emph{We discuss the equation-error approach and penalty methods for optimization as well as all-at-one and reduced approaches for PDE-constrained optimization. If we have missed any particular relevant research in our discussion we would be happy to take suggestions.}
+\vspace{5mm}\emph{We discuss the equation-error approach and penalty methods for optimization as well as all-at-one and reduced approaches for PDE-constrained optimization. If we have missed any particularly relevant references in our discussion we would be happy to take suggestions.}
 
 
 
 \item Add a (separate) subsection on the computational cost of the method and show that it's scalable, hence indeed feasible for large-scale problems. 
 
 \vspace{5mm}
-\emph{We discuss the computational cost in section 5.4. We have extended the discussion a little. A full-scale (computational) scalability analysis is outside the scope of this paper.}
+\emph{We discuss the computational cost in section 5.4. We have extended the discussion a little. A full-scale (computational) scalability analysis is outside the scope of this paper as this would crucially depend on the chosen implementation and libraries used for sparse matrix factorization.}
 
 \item Give a more complete list of references for the full space and reduced space methods. 
 
@@ -72,7 +72,7 @@ In my opinion this is the major problem of this approach, that it is not clear h
 
 \vspace{5mm}
 
-\emph{The $\lambda$ is scaled w.r.t to the largest eigenvalue of $A^{-T}P^TPA^{-1}$, so $\lambda=0.1$ is relatively small but only compared to the natural scaling of the system. We have included some additional results and comments that explain this behaviour; we need the $\mathcal{O}(\lambda^{-1})$ to be small compared to the given tolerance. The fact that such good reconstructions can be obtained with relatively high tolerance is particular for inverse problems}
+\emph{The $\lambda$ is scaled w.r.t to $\|PA^{-1}\|^2_2$, so $\lambda=0.1$ seems arbitrary, but it is relatively small compared to the natural scaling of the system. We have included some additional results and comments that explain this behaviour; we need the $\mathcal{O}(\lambda^{-1})$ to be small compared to the given tolerance. The fact that such good reconstructions can be obtained with relatively high tolerance is particular for ill-posed inverse problems.}
 
 \vspace{5mm}
 
