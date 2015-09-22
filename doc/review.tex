@@ -20,7 +20,7 @@ The new/updated manuscript is well structured and well written. The authors expl
 \item Add a (separate) subsection on the computational cost of the method and show that it's scalable, hence indeed feasible for large-scale problems. 
 
 \vspace{5mm}
-\emph{We discuss the computational cost in section 5.4. We have extended the discussion a little. A full-scale (computational) scalability analysis is outside the scope of this paper as this would crucially depend on the chosen implementation and libraries used for sparse matrix factorization.}
+\emph{We discuss the computational cost in section 5.4. We have extended the discussion and als refer to section 5.1, where we discuss in detail the possibilities for solving the augmented PDE and argue that we can do this at roughly the same computational complexity as the original PDE. A full-scale (computational) scalability analysis is outside the scope of this paper as this would crucially depend on the chosen implementation and libraries used for sparse matrix factorization.}
 
 \item Give a more complete list of references for the full space and reduced space methods. 
 
@@ -64,7 +64,7 @@ However the corresponding drawbacks are as follows:
 
 \vspace{5mm}
 
-\emph{The analysis presented in section 4 suggests that we can indeed reach a finite tolerance for a finite value of $\lambda$ and the numerical experiments suggest that satisfactory results can be obtained using a single fixed value of $\lambda$. To reach any given tolerance, however, a continuation is needed. We have stressed this in the discussion on the computational complexity. Also, we have included some numerical results using a very rudimentary continuation strategy showing that this does have to affect the computational cost too much, since only a few iterations are required for each $\lambda$.}
+\emph{The analysis presented in section 4 suggests that we can indeed reach a finite tolerance for a finite value of $\lambda$ and the numerical experiments suggest that satisfactory results can be obtained using a single fixed value of $\lambda$. To reach any given tolerance, however, a continuation is needed. We have stressed this in the discussion on the computational complexity. Also, we have included some numerical results using a very rudimentary continuation strategy showing that this does not have to affect the computational cost too much, since only a few iterations are required for each $\lambda$.}
 
 \vspace{5mm}
 
@@ -72,7 +72,7 @@ In my opinion this is the major problem of this approach, that it is not clear h
 
 \vspace{5mm}
 
-\emph{The $\lambda$ is scaled w.r.t to $\|PA^{-1}\|^2_2$, so $\lambda=0.1$ seems arbitrary, but it is relatively small compared to the natural scaling of the system. We have included some additional results and comments that explain this behaviour; we need the $\mathcal{O}(\lambda^{-1})$ to be small compared to the given tolerance. The fact that such good reconstructions can be obtained with relatively high tolerance is particular for ill-posed inverse problems.}
+\emph{The $\lambda$ is scaled w.r.t to $\|PA^{-1}\|^2_2$, so $\lambda=0.1$ seems arbitrary, but it is relatively small compared to the natural scaling of the system. We have included some additional results and comments that explain this behaviour; we need the $\mathcal{O}(\lambda^{-1})$ to be small compared to the given tolerance. The fact that such good reconstructions can be obtained with relatively high tolerance is particular for ill-posed inverse problems. We have added some discussion to stress this point.}
 
 \vspace{5mm}
 

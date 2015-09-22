@@ -68,7 +68,7 @@ We give the above sketched method a sound theoretical basis by showing that it c
 the solution of which (theoretically) satisfies the optimality conditions of the constrained problem (\ref{eq:constr}) as $\lambda\rightarrow\infty$.
 Such reformulations of the constrained problem are well-known but are, to our best knowledge, not being applied to inverse problems. 
 
-The main contribution of this paper is the development of an efficient algorithm based on the penalty formulation for inverse problems and the insight that we can approximate the solution of the constrained problem (\ref{eq:constr}) up to arbitrary finite precision with a finite $\lambda$. In (ill-posed) inverse problems, we often do not require very high precision because we can only hope to resolve certain components of $\mathbf{m}$ anyway. We can understand this by realizing that not all constraints are equally important; those that constrain the null-space components of $\mathbf{m}$ need not be enforced as strictly. Thus, the parameter $\lambda$ need only be large enough to enforce these constraints. The numerical experiments suggest that a single fixed value of $\lambda$ is typically sufficient.
+The main contribution of this paper is the development of an efficient algorithm based on the penalty formulation for inverse problems and the insight that we can approximate the solution of the constrained problem (\ref{eq:constr}) up to arbitrary finite precision with a finite $\lambda$. In (ill-posed) inverse problems, we often do not require very high precision because we can only hope to resolve certain components of $\mathbf{m}$ anyway. We can understand this by realizing that not all constraints are equally important; those that constrain the null-space components of $\mathbf{m}$ need not be enforced as strictly. Thus, the parameter $\lambda$ need only be large enough to enforce the dominant constraints. The numerical experiments suggest that a single fixed value of $\lambda$ is typically sufficient.
 
 Our approach is based on the elimination of the state variable, $\mbf{u}$, from (\ref{eq:pen}). This reduces the dimensionality of the optimization problem in a similar fashion as the \emph{reduced} approach (\ref{eq:red}) does for the constrained formulation (\ref{eq:constr}) by solving $K$ systems of equations. This elimination leads to a cost function $\phi_{\lambda}(\mathbf{m})$ whose gradient and Hessian can be readily computed. The main difference is that the state $\mathbf{u}$ in this case is not defined by solving the PDE, but instead is solved from an overdetermined system that involves both the PDE \emph{and} the data (\ref{eq:apuqd}). Due to the special block-structure of the problems under consideration, this elimination can be done efficiently, leading to a tractable algorithm. Contrary to the conventional \emph{reduced} approach, the resulting algorithm does \emph{not} enforce the constraints at each iteration and arguably leads to a less non-linear problem in $\mbf{m}$. It is outside the scope of the current paper to give a rigorous proof of this statement, but we present some numerical evidence to support this conjecture.
 
@@ -219,9 +219,9 @@ A disadvantage of this approach is that it requires the solution of the PDEs at 
 
 \section{Penalty and augmented Lagrangian methods}
 \label{penalty}
-It is impossible to do justice to the wealth of research that has been done on penalty and augmented Lagrangian methods here but we give a brief overview, high-lighting the main characteristics of a few basic approaches and their limitations when applied to inverse problems. 
+It is impossible to do justice to the wealth of research that has been done on penalty and augmented Lagrangian methods in one section. Instead, we give a brief overview high-lighting the main characteristics of a few basic approaches and their limitations when applied to inverse problems. 
 
-A constrained optimization problem of the form (\ref{eq:constr}) can be recast as an unconstrained problem by introducing a positive penalty function $\pi: \mathbb{C}^{N}\rightarrow\mathbb{R}$ and a penalty parameter $\lambda>0$ as follows
+A constrained optimization problem of the form (\ref{eq:constr}) can be recast as an unconstrained problem by introducing a non-negative penalty function $\pi: \mathbb{C}^{N}\rightarrow\mathbb{R}_{\geq 0}$ and a penalty parameter $\lambda>0$ as follows
 \bq
 \label{eq:penalty}
 \min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2 + \lambda\pi(\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}).
@@ -255,8 +255,8 @@ The gradient and Hessian of $\mcl{P}$ are given by
 \right)
 = 
 \left(\begin{array}{c}
-\lambda G(\mbf{m},\mbf{u})^T\left(A(\mbf{m})\mbf{u} - \mbf{q}\right)\\
-P^T(P\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^T(A(\mbf{m})\mbf{u} - \mbf{q})\\
+\lambda G(\mbf{m},\mbf{u})^T\!\left(A(\mbf{m})\mbf{u} - \mbf{q}\right)\\
+P^T\!(P\mbf{u} - \mbf{d}) + \lambda A(\mbf{m})^T\!(A(\mbf{m})\mbf{u} - \mbf{q})\\
 \end{array}
 \right),
 \eq
@@ -273,7 +273,7 @@ and
 where
 \bq
 \mcl{P}_{\mbf{m},\mbf{m}} &=& \lambda (G(\mbf{m},\mbf{u})^TG(\mbf{m},\mbf{u}) + R(\mbf{m},\mbf{u},A(\mbf{m})\mbf{u}-\mbf{q})),\\
-\mcl{P}_{\mbf{u},\mbf{u}} &=&P^T\!P + \lambda A(\mbf{m})^TA(\mbf{m}),\\
+\mcl{P}_{\mbf{u},\mbf{u}} &=&P^T\!P + \lambda A(\mbf{m})^T\!A(\mbf{m}),\\
 \label{eq:Hl}
 \mcl{P}_{\mbf{m},\mbf{u}} &=&\lambda (K(\mbf{m},A(\mbf{m})\mbf{u}-\mbf{q}) + A(\mbf{m})^TG(\mbf{m},\mbf{u})).
 \eq
@@ -291,14 +291,14 @@ The optimization problem for the state (\ref{eq:ul}) has a closed-form solution:
 \[
 \mbf{u}_{\lambda} = \left(A(\mathbf{m})^T\!A(\mathbf{m}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m})^T\mbf{q} + \lambda^{-1}P\mbf{d}\right).
 \]
-The modified system $A^T\!A + \lambda^{-1}P^T\!P$ is a low-rank update of the original PDE and incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); the estimate of the state is not only based on the physics and the current model, but also on the data.
+The modified system $A^T\!A + \lambda^{-1}P^T\!P$ is a low-rank modification of the original PDE and incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); the estimate of the state is not only based on the physics and the current model, but also on the data.
 
 Following \cite[Thm. 1]{Aravkin2012c}, it is readily verified that the gradient and Hessian of $\phi_{\lambda}$ are given by 
 \bq
 \label{eq:gradpen}
 \nabla\phi_{\lambda}(\mbf{m}) &=& \mcl{P}_{\mbf{m}}(\mbf{m},{\mbf{u}}_{\lambda}),\\
 \label{eq:hesspen}
-\nabla^2\phi_{\lambda}(\mbf{m}) &=& \mcl{P}_{\mbf{m},\mbf{m}}\Phi_{\lambda}(\mbf{m},{\mbf{u}}_{\lambda}) \nonumber\\
+\nabla^2\phi_{\lambda}(\mbf{m}) &=& \mcl{P}_{\mbf{m},\mbf{m}}(\mbf{m},{\mbf{u}}_{\lambda}) \nonumber\\
 &&-\mcl{P}_{\mbf{m},\mbf{u}}(\mbf{m},{\mbf{u}}_{\lambda})\left(\mcl{P}_{\mbf{u},\mbf{u}}(\mbf{m},{\mbf{u}}_{\lambda})\right)^{-1}\mcl{P}_{\mbf{u},\mbf{m}}(\mbf{m},{\mbf{u}}_{\lambda}).
 \eq
 Note that $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\mcl{P}$.
@@ -424,15 +424,15 @@ and hence that
 \qed
 \end{proof}
 
-This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|$) with a finite $\lambda$. In order to reach a given tolerance, we need $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be small compared to $\|\mcl{L}_{\mbf{m}}\|_2$. This condition can easily be verified for a given $\mathbf{m}$ and thus serve as the basis for a selection criterion for $\lambda$.
+This means we can use algorithm \ref{alg:penalty} to find a stationary point of the Lagrangian within finite accuracy (in terms of $\|\nabla\mcl{L}\|_2$) with a finite $\lambda$. In order to reach a given tolerance, we need $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ to be small compared to $\|\mcl{L}_{\mbf{m}}\|_2$. This condition can easily be verified for a given $\mathbf{m}$ and thus serve as the basis for a selection criterion for $\lambda$.
 
-In an ill-posed inverse problem, we can only hope to reconstruct a few components of $\mathbf{m}^*$, roughly corresponding the dominant eigenvectors of the reduced Hessian. Thus, the tolerance $\epsilon$ can be quite large, even for an acceptable reconstruction. Driving down the norm of the gradient any further would only refine the reconstruction in the eigenmodes corresponding to increasingly small eigenvalues and would hardly affect the final reconstruction. 
+In an ill-posed inverse problem, we can only hope to reconstruct a few components of $\mathbf{m}^*$, roughly corresponding the dominant eigenvectors of the reduced Hessian. Thus, the tolerance $\epsilon$ can be quite large, even for an acceptable reconstruction. Driving down the norm of the gradient any further would only refine the reconstruction in the eigenmodes corresponding to increasingly small eigenvalues and would hardly affect the final reconstruction and datafit. 
 
 Next, we derive an expression for the distance of the final iterate of algorithm \ref{alg:penalty}, $\mbf{m}^*_{\lambda}$, to a stationary point of the Lagrangian, $\mbf{m}^*$ in terms of the chosen tolerance, $\epsilon$, and the data-error $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$. 
 
 \begin{theorem}
 \label{theorem2}
-Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left( \widetilde{\epsilon} + \widetilde{\lambda}^{-1}\widetilde{\eta}\right)$ where $H$ is the reduced Gauss-Newton Hessian with condition number $\kappa(H)$, $\widetilde{\epsilon} = \epsilon/\|H\|_2$ is the scaled tolerance, $\widetilde{\eta} = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2/\sqrt{\|H\|_2}$ is the scaled data-error and $\widetilde{\lambda} = \lambda / \|PA^{-1}\|_2^2$ is the scaled penalty parameter.
+Given a stationary point of the Lagrangian $(\mbf{m}^*, \mbf{u}^*, \mbf{v}^*)$ and the final iterate of algorithm \ref{alg:penalty} $\mbf{m}^*_{\lambda}$ such that $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*_{\lambda},\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2 \leq \epsilon$, we have $\|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left( \widetilde{\epsilon} + \widetilde{\lambda}^{-1}\widetilde{\eta}\right)$ where $H = J^T\!J$ is the reduced Gauss-Newton Hessian with condition number $\kappa(H)$, $\widetilde{\epsilon} = \epsilon/\|H\|_2$ is the scaled tolerance, $\widetilde{\eta} = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2/\|J\|_2$ is the scaled data-error and $\widetilde{\lambda} = \lambda / \|PA^{-1}\|_2^2$ is the scaled penalty parameter.
 \end{theorem}
 \begin{proof}
 We expand the gradient of the Lagrangian at the stationary point as
@@ -579,7 +579,7 @@ To illustrate this, we show a few examples for a 1D (time-harmonic) parabolic PD
 are shown in figures \ref{fig:example2} and \ref{fig:example3}. These show that the actual eigenvalues distributions do not change significantly. We expect
 that iterative methods will perform similarly on the augmented system as they would on the original system. \emph{How} to effectively precondition the augmented system given a good preconditioner for the original system is a different matter which is outside the scope of this paper.
 
-\textbf{Direct methods:} When the matrix has additional structure we might actually prefer a direct method over an iterative method. An example is explicit time-stepping, where the system matrix $A$ exhibits a lower-triangular block-structure. In this case the action of $A^{-1}$ can be computed efficiently via forward substitution, requiring storage of only a few time-slices of the state. The adjoint system $A^{-T}$ can be solved by backward substitution, however, the full time-history of the state variable is needed to compute the gradient.
+\textbf{Direct methods:} When the matrix has additional structure we might actually prefer a direct method over an iterative method. An example is explicit time-stepping, where the system matrix $A$ exhibits a lower-triangular block-structure. In this case the action of $A^{-1}$ can be computed efficiently via forward substitution, requiring storage of only a few time-slices of the state. The adjoint system $A^{-T}$ can be solved by backward substitution, however, the full time-history of the state variable is needed to compute the gradient \cite{Rothauge2015}.
 For the penalty method, the augmented system $A^T\!A + \lambda^{-1}P^T\!P$ will have a banded structure and the system can be solved using a block version of the Thomas algorithm, which again would require storage of the full time-history. So even in this setting it seems possible to apply the penalty method at roughly the same per-iteration complexity as the reduced method.
 
 \subsection{Gradient and Hessian computation}
@@ -711,9 +711,7 @@ These experiments suggests that the penalty method indeed mitigates some of the 
 \label{discussion}
 This paper lays out the basics of an efficient implementation of the penalty method for PDE-constrained optimization problems arising in inverse problems. While the initial results are promising, some aspects of the proposed method warrant further investigation.
 
-Even though the theoretical results suggest that the penalty approach can find a stationary point of the Lagrangian with finite precision with a finite $\lambda$, it is not clear how to choose a suitable value for $\lambda$ a priori. Our analysis and results suggest that choosing $\lambda$ to be a small fraction of $\|PA^{-1}\|_2^2$ at the initial iterate yields good results. A more solid justification of this observation is needed to design robust algorithms.
-
-A continuation strategy for $\lambda$ is needed if we want to guarantee finding a stationary point of the Lagrangian with preset tolerance. A natural way to do this seems to by detecting when the penalty method stalls and subsequently reducing $\lambda$. The numerical results suggest that such an approach is viable, but further study is needed in order to develop a robust continuation strategy.
+Even though the theoretical results suggest that the penalty approach can find a stationary point of the Lagrangian with finite precision with a finite $\lambda$, it is not clear how to choose a suitable value for $\lambda$ a priori. Our analysis and results suggest that choosing $\lambda$ to be a small fraction of $\|PA^{-1}\|_2^2$ at the initial iterate yields good results. A continuation strategy for $\lambda$ is needed if we want to guarantee finding a stationary point of the Lagrangian with preset tolerance. A natural way to do this seems to be detecting when the penalty method stalls and subsequently reducing $\lambda$. The numerical results suggest that such an approach is viable, but further study is needed in order to develop a robust continuation strategy.
 
 The penalty formulation essentially relaxes the constraints and therefore allows for errors in the physics as well as the data. As a result, the penalty formulation leads to reduced sensitivity of the final reconstruction to the initial guess. Further investigation is needed to characterize this robustness.  
 
