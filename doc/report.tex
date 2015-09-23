@@ -124,7 +124,7 @@ These Jacobian matrices are typically sparse when $A$ is sparse and can be compu
 %tolerance, i.e. $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
 
 \subsection{All-at-once approach}
-So-called all-at-once approaches find such a stationary point by applying a Newton-like method to the Lagrangian \cite{Haber2000,Haber2001}. A basic algorithm for finding a startionary point of the Lagrangian up to a given tolerance $\epsilon$ is given in Algorithm \ref{alg:allatonce}. If the algorithm converges it returns iterates $(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)$ such that $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
+So-called all-at-once approaches find such a stationary point by applying a Newton-like method to the Lagrangian \cite{Haber2000,Haber2001}. A basic algorithm for finding a stationary point of the Lagrangian up to a given tolerance $\epsilon$ is given in Algorithm \ref{alg:allatonce}. If the algorithm converges it returns iterates $(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)$ such that $\|\nabla \mcl{L}(\mathbf{m}^*,\mathbf{u}^*,\mbf{v}^*)\|_2\leq \epsilon$.
 %
 \begin{algorithm}
 \caption{Basic Newton algorithm for finding a stationary point of the Lagrangian via the all-at-once method}
@@ -232,11 +232,11 @@ A quadratic penalty function $\pi(\cdot) = \ts{\frac{1}{2}}||\cdot||_2^2$ leads 
 
 A common concern with this approach is that the Hessian may become increasingly ill-conditioned as $\lambda\rightarrow\infty$ when there are fewer constraints than variables. For PDE-constrained optimization in inverse problems, there are enough constraints ($A(\mbf{m})$ is invertible) to prevent this. We discuss this limiting case in more detail in section \ref{algorithm}.
 
-For certain non-smooth penalty functions, such as $\pi(\cdot) = ||\cdot||_1$, the minimizer of (\ref{eq:penalty}) is a solution of the constrained problem for \emph{any} $\lambda \geq \lambda^*$ for some $\lambda^*$ \cite[Thm. 17.3]{Nocedal}. In practice, a continuation strategy is used to find a suitable value for $\lambda$. An advantage of this approach is that $\lambda$ does not become arbritarily large, thus avoiding the ill-conditioning problems mentioned above. A disadvantage is that the resulting unconstrained problem is no longer differentiable. With large-scale applications in mind, we therefore do not consider exact penalty methods any further in this paper.
+For certain non-smooth penalty functions, such as $\pi(\cdot) = ||\cdot||_1$, the minimizer of (\ref{eq:penalty}) is a solution of the constrained problem for \emph{any} $\lambda \geq \lambda^*$ for some $\lambda^*$ \cite[Thm. 17.3]{Nocedal}. In practice, a continuation strategy is used to find a suitable value for $\lambda$. An advantage of this approach is that $\lambda$ does not become arbitrarily large, thus avoiding the ill-conditioning problems mentioned above. A disadvantage is that the resulting unconstrained problem is no longer differentiable. With large-scale applications in mind, we therefore do not consider exact penalty methods any further in this paper.
 
-Another approach that avoids having to increase $\lambda$ to infinity is the \emph{augmented Lagrangian} approach (cf. \cite{Nocedal}). In this approach, a quadractic penalty $\lambda\|\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}\|_2^2$ is added to the Lagrangian (\ref{eq:Lagrangian}). A standard approach to solve the constrained problem based on the augmented Lagrangian is the \emph{Alternating direction method of multipliers} (ADMM). In its most basic form it relies on minimizing the augmented Lagrangian w.r.t. $(\mbf{m}, \mbf{u})$ and subsequently updating the multiplier $\mbf{v}$ and the penalty parameter $\lambda$ \cite{Eckstein2012a,Curtis2014}. This would require us to store the multipliers, which is not feasible for the problems we have in mind.
+Another approach that avoids having to increase $\lambda$ to infinity is the \emph{augmented Lagrangian} approach (cf. \cite{Nocedal}). In this approach, a quadratic penalty $\lambda\|\mbf{A}(\mbf{m})\mbf{u} - \mbf{q}\|_2^2$ is added to the Lagrangian (\ref{eq:Lagrangian}). A standard approach to solve the constrained problem based on the augmented Lagrangian is the \emph{Alternating direction method of multipliers} (ADMM). In its most basic form it relies on minimizing the augmented Lagrangian w.r.t. $(\mbf{m}, \mbf{u})$ and subsequently updating the multiplier $\mbf{v}$ and the penalty parameter $\lambda$ \cite{Eckstein2012a,Curtis2014}. This would require us to store the multipliers, which is not feasible for the problems we have in mind.
 
-In the next two sections, we discuss a computationally efficient algorithm for solving the constrained optimization problem (\ref{eq:constr}) based on a quadratic penalty formulation. This formulation is attractive because it leads to a differentiable, unconstrained, optimization problem. Moreover, the optimization in $\mbf{u}$ has a closed-form solution which can be computed efficiently, making it an ideal canditate for the type of problems we have in mind.
+In the next two sections, we discuss a computationally efficient algorithm for solving the constrained optimization problem (\ref{eq:constr}) based on a quadratic penalty formulation. This formulation is attractive because it leads to a differentiable, unconstrained, optimization problem. Moreover, the optimization in $\mbf{u}$ has a closed-form solution which can be computed efficiently, making it an ideal candidate for the type of problems we have in mind.
 
 \section{A reduced penalty method}
 \label{varpro}
@@ -303,7 +303,7 @@ Following \cite[Thm. 1]{Aravkin2012c}, it is readily verified that the gradient 
 \eq
 Note that $\nabla^2\phi_{\lambda}$ is the Schur complement of $\nabla^2\mcl{P}$.
 
-A basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algorithm \ref{alg:penalty}. Note that the computation of the adjoint-state $\mathbf{v}_{\lambda}$ does \emph{not} require an additional PDE-solve in this algorithm. Instead, the forward and adjoint solve are done simulatenously via the normal equations.
+A basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algorithm \ref{alg:penalty}. Note that the computation of the adjoint-state $\mathbf{v}_{\lambda}$ does \emph{not} require an additional PDE-solve in this algorithm. Instead, the forward and adjoint solve are done simultaneously via the normal equations.
 
 \begin{algorithm}
 \caption{Basic Gauss-Newton algorithm for find a stationary point of the Lagrangian via the penalty method}
@@ -563,7 +563,7 @@ in a least-squares sense. Assuming that all the blocks $A_i$ and $P_i$ are ident
 
 \textbf{Factorization:} If both $A$ and $P$ are sparse, we can efficiently solve the system via a QR factorization or via a Cholesky factorization of the corresponding Normal equations. In many applications, $P^T\!P$ is a (nearly) diagonal matrix and thus the augmented system $A^T\!A + \lambda^{-1}P^T\!P$ has a similar sparsity pattern as the original system. Thus, the fill-in will not be worse than when factorizing the original system.
 
-\textbf{Iterative methods:} While we can make use of factorization techniques for small-scale applications, industry-scale applications will typically require (preconditioned) iterative methods.  Obviously, we can apply any preconditioned iterative method that is suitable for solving least-squares problems, such as LSQR, LSMR or CGLS \cite{Paige1982,Fong2011,Bru2014}. Another promising candidate is a generic accelerated row-projected method described by \cite{Bjorck1979,Gordon2013} which proved usefull for solving PDEs and can be easily extended to deal with overdetermined systems \cite{Censor1983}. 
+\textbf{Iterative methods:} While we can make use of factorization techniques for small-scale applications, industry-scale applications will typically require (preconditioned) iterative methods.  Obviously, we can apply any preconditioned iterative method that is suitable for solving least-squares problems, such as LSQR, LSMR or CGLS \cite{Paige1982,Fong2011,Bru2014}. Another promising candidate is a generic accelerated row-projected method described by \cite{Bjorck1979,Gordon2013} which proved useful for solving PDEs and can be easily extended to deal with overdetermined systems \cite{Censor1983}. 
 
 To get an idea of how such iterative methods will perform we explore some of the properties of the augmented system. The augmented system $A^T\!A + \lambda^{-1} P^T\!P$ is a rank $L$ modification of the original system $A^T\!A$. It follows from \cite[Thm 8.1.8]{Golub1996} that the eigenvalues are related as
 \bq
@@ -690,7 +690,7 @@ The results for the GN method are shown in figure \ref{fig:2D_exp1}.
 The convergence history, figure \ref{fig:2D_exp1} (top, left), shows the predicted behaviour of the penalty method; the norm of the gradient of the Lagrangian stalls at $\mcl{O}(\lambda^{-1})$ when using the penalty method. The convergence history of the continuation strategy shows that is possible to reach the desired tolerance by gradually increasing $\lambda$ (using $\lambda = \{0.1, 1, 10, 100, 1000\}$ with a few iterations each). Figure \ref{fig:2D_exp1} (top, right) shows that the methods perform similarly in terms of reconstruction error. The resulting parameter estimates are very similar as can be seen 
 in figure \ref{fig:2D_exp1} (bottom). The actual costs of the inversion are listed in table \ref{table:2D_exp1}. The penalty method converges to the same error $\|\mathbf{m}^k - \mathbf{m}^*\|$ in less iterations and uses less PDE solves. Note that all methods start overfitting after a few iterations. This can be countered by including more appropriate regularization or stopping the iterations early. The point here is to show that the penalty method gives similar results as the reduced method.
 
-The results for the QN method are shown in figure \ref{fig:2D_exp2}. The convergenge history shows the same behaviour as the previous experiment. The costs of the inversion, shown in table \ref{table:2D_exp2}, are slightly less than those of the GN method. As with the GN method, the penalty method converges in less iterations and uses less PDE solves per iterations. 
+The results for the QN method are shown in figure \ref{fig:2D_exp2}. The convergence history shows the same behaviour as the previous experiment. The costs of the inversion, shown in table \ref{table:2D_exp2}, are slightly less than those of the GN method. As with the GN method, the penalty method converges in less iterations and uses less PDE solves per iterations. 
 
 \textbf{Sensitivity to noise:}
 Results for the QN method on data with 10\% Gaussian noise are shown in figure  \ref{fig:2D_exp3}. Figure \ref{fig:2D_exp4} shows the results on data with 20\% Gaussian noise. These results show that the penalty approach is not overly sensitive to noise and gives very similar --even slightly better-- results compared to the reduced approach. 
@@ -728,7 +728,7 @@ The main algorithmic difference with the conventional reduced approach is the wa
 
 The numerical examples show that very good results can be obtained by using even a single, relatively small, value of $\lambda$. An ad-hoc continuation strategy further shows that it is viable to gradually increase $\lambda$ in order to reach the desired tolerance.
 
-The numerical examples further show that when using the penalty formulation, the optimzation problem may actually be less non-linear and that in some cases a better parameter reconstruction is obtained as compared to the conventional reduced approach. In particular, the results show that the penalty method is not overly sensitive to noise and less sensitive to the initial model than the conventional reduced approach. 
+The numerical examples further show that when using the penalty formulation, the optimization problem may actually be less non-linear and that in some cases a better parameter reconstruction is obtained as compared to the conventional reduced approach. In particular, the results show that the penalty method is not overly sensitive to noise and less sensitive to the initial model than the conventional reduced approach. 
 
 Thus, the proposed approach is a viable alternative to the conventional reduced approach for solving inverse problems with PDE-constraints.
 
@@ -754,14 +754,14 @@ $N$	&   $10^3$  & $10^6$	&	$10^9$			\\
 \begin{table}
 \centering
 \input{./figs/example2}
-\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath(10\pi) - \partial_x^2$ on $x\in [0,1]$ and $P_L$ is a restricted identity matrix of rank $L$. }
+\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discretization of $\imath(10\pi) - \partial_x^2$ on $x\in [0,1]$ and $P_L$ is a restricted identity matrix of rank $L$. }
 \label{table:example2}
 \end{table}
 
 \begin{table}
 \centering
 \input{./figs/example3}
-\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $(10\pi)^2 m + \partial_x^2$ on $x\in [0,1]$ and $P_L$ is a restricted identity matrix of rank $L$. }
+\caption{Ratio of the condition numbers of $A^T\!A + \lambda P_L^T\!P_L$ and $A^T\!A$ for various $\lambda$ and $L$, where $A$ is a finite-difference discretization of $(10\pi)^2 m + \partial_x^2$ on $x\in [0,1]$ and $P_L$ is a restricted identity matrix of rank $L$. }
 \label{table:example3}
 \end{table}
 
@@ -809,7 +809,7 @@ all-at-once&   0   &    $2KN + M$   &  solve sparse symmetric, possibly indefini
 \includegraphics[scale=.2]{./figs/example2_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
-\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $\imath(10\pi) - \partial_x^2$ on $x\in [0,1]$
+\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discretization of $\imath(10\pi) - \partial_x^2$ on $x\in [0,1]$
 and $P_L$ is a restricted identity matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
 \label{fig:example2}
 \end{figure}
@@ -822,7 +822,7 @@ and $P_L$ is a restricted identity matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.2]{./figs/example3_c}\\
 {\small $L = 1$}&{\small $L = 10$}&{\small $L = 20$}\\
 \end{tabular}
-\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discritization of $(10\pi)^2 m + \partial_x^2$ on $x\in [0,1]$
+\caption{Eigenvalues of the augmented system,  $A^T\!A + \lambda P_L^T\!P_L$, for various $\lambda$ and $L$, where $A$ is a finite-difference discretization of $(10\pi)^2 m + \partial_x^2$ on $x\in [0,1]$
 and $P_L$ is a restricted identity matrix of rank $L$. For comparison, the eigenvalues of the original system $A^T\!A$ are also shown.}
 \label{fig:example3}
 \end{figure}
@@ -834,7 +834,7 @@ and $P_L$ is a restricted identity matrix of rank $L$. For comparison, the eigen
 \includegraphics[scale=.4]{./figs/1D_exp1_b}\\
 {\small (a)}&{\small (b)}\\
 \end{tabular}
-\caption{Convergence history and reconstructions for 1D resisivity problem. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
+\caption{Convergence history and reconstructions for 1D resistivity problem. Even though the penalty method does not converge to same tolerance as the reduced method in terms of the gradient of the Lagrangian, the resulting parameter estimates are almost the same.}
 \label{fig:1D_exp1}
 \end{figure}
 

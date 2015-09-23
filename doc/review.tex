@@ -7,6 +7,9 @@
 \date{} 
 \maketitle 
 \clearpage
+
+We thank both referees for their constructive comments which greatly helped us to improve the manuscript. Detailed replies to the comments can be found below.
+
 \section{referee 1}
 The new/updated manuscript is well structured and well written. The authors explain the proposed method clearly and demonstrate the algorithm using several well-chosen model problems. Here are my comments: 
 
@@ -14,7 +17,6 @@ The new/updated manuscript is well structured and well written. The authors expl
 \item I suggest the authors discuss any relevant research (if applicable) to the proposed method. 
 
 \vspace{5mm}\emph{We discuss the equation-error approach and penalty methods for optimization as well as all-at-one and reduced approaches for PDE-constrained optimization. If we have missed any particularly relevant references in our discussion we would be happy to take suggestions.}
-
 
 
 \item Add a (separate) subsection on the computational cost of the method and show that it's scalable, hence indeed feasible for large-scale problems. 
@@ -64,7 +66,7 @@ However the corresponding drawbacks are as follows:
 
 \vspace{5mm}
 
-\emph{The analysis presented in section 4 suggests that we can indeed reach a finite tolerance for a finite value of $\lambda$ and the numerical experiments suggest that satisfactory results can be obtained using a single fixed value of $\lambda$. To reach any given tolerance, however, a continuation is needed. We have stressed this in the discussion on the computational complexity. Also, we have included some numerical results using a very rudimentary continuation strategy showing that this does not have to affect the computational cost too much, since only a few iterations are required for each $\lambda$.}
+\emph{The analysis presented in section 4 suggests that we can indeed reach a finite tolerance for a finite value of $\lambda$ and the numerical experiments suggest that satisfactory results can be obtained using a single fixed value of $\lambda$. As you say,  a continuation is needed to reach any given tolerance. We have stressed this in the discussion on the computational complexity. Also, we have included some numerical results using a very rudimentary continuation strategy showing that this does not have to affect the computational cost too much, since only a few iterations are required for each $\lambda$.}
 
 \vspace{5mm}
 
