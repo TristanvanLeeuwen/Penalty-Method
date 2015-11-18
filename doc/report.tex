@@ -24,7 +24,7 @@ For linear PDEs, the inverse problem can be formulated (after discretization) as
 \min_{\mbf{m},\mbf{u}} \ts{\frac{1}{2}}||P\mathbf{u} - \mathbf{d}||_2^2  \quad 
 \mbox{s.t.} \quad A(\mathbf{m})\mathbf{u} = \mathbf{q},
 \eq
-where $\mathbf{m}\in\mathbb{R}^{M}$ represents the (gridded) parameter of interest, $A(\mathbf{m})\in\mathbb{C}^{N\times N}$ and $\mathbf{q}\in\mathbb{C}^{N}$ represent the discretized PDE and source term, $\mathbf{u}\in\mathbb{C}^{N}$ is the state variable and $\mathbf{d}\in \mathbb{C}^{L}$ are the observed data. The measurement process is modelled by sampling the state with $P\in \mathbb{R}^{L\times N}$. Throughout the paper $^T$ denotes the (complex-conjugate) transpose.  
+where $\mathbf{m}\in\mathbb{R}^{M}$ represents the (gridded) parameter of interest, $A(\mathbf{m})\in\mathbb{C}^{N\times N}$ and $\mathbf{q}\in\mathbb{C}^{N}$ represent the discretized PDE and source term, $\mathbf{u}\in\mathbb{C}^{N}$ is the state variable and $\mathbf{d}\in \mathbb{C}^{L}$ are the observed data. The measurement process is modelled by sampling the state with $P\in \mathbb{R}^{L\times N}$. Throughout the paper we assume that $A$ stems from a well-posed PDE and hence is invertible. We further use $^T$ to denote the (complex-conjugate) transpose.  
 
 Typically, measurements are made from multiple, say $K$, independent experiments,
 in which case $\mathbf{u} \in \mathbb{C}^{KN}$ is a block vector containing the state variables for all the experiments. Likewise, $\mathbf{q}\in \mathbb{C}^{KN}$ and $\mathbf{d}\in \mathbb{C}^{KL}$ are block vectors containing the right-hand-sides and observations for all experiments. The matrices $A(\mathbf{m})$ and $P$ will be block-diagonal matrices in this case. Typical sizes for $M,N,K,L$ for seismic inverse problems are listed in table \ref{table:sizes}.
@@ -180,7 +180,7 @@ The gradient and the Hessian of $\phi$ are given by
 \nonumber\\
 && + R(\mbf{m},\mbf{u}_{\mathrm{red}},\mbf{v}_{\mathrm{red}}),
 \eq
-where $\mbf{v}_{\mathrm{red}} = A(\mbf{m})^{-T}P\left(\mbf{d} - P\mbf{u}_{\mathrm{red}}\right)$.
+where $\mbf{v}_{\mathrm{red}} = A(\mbf{m})^{-T}P^T\!\left(\mbf{d} - P\mbf{u}_{\mathrm{red}}\right)$.
 
 A basic (Gauss-Newton) algorithm for minimizing $\phi(\mathbf{m})$ is given in 
 Algorithm \ref{alg:reduced}. Note that this corresponds to a block-elimination of the KKT system and the iterates automatically satisfy $\mcl{L}_{\mathbf{u}}(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}},\mbf{v}^k_{\mathrm{red}}) = \mcl{L}_{\mathbf{v}}(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}},\mbf{v}^k_{\mathrm{red}}) = 0$. If the algorithm terminates successfully, the final iterates $(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})$ additionally satisfy $\|\mcl{L}_{\mathbf{m}}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_2 \leq \epsilon$, so that 
@@ -194,7 +194,7 @@ $\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_
 \STATE{$k=0$}
 \STATE{$\mathbf{u}^{0}_{\mathrm{red}}  = A(\mathbf{m}^{0})^{-1}\mathbf{q}$}
 \vspace{1mm}
-\STATE{$\mathbf{v}^{0}_{\mathrm{red}}  = A(\mathbf{m}^{0})^{-T}P(\mathbf{d} - P\mathbf{u}^{0}_{\mathrm{red}})$}
+\STATE{$\mathbf{v}^{0}_{\mathrm{red}}  = A(\mathbf{m}^{0})^{-T}P^T\!(\mathbf{d} - P\mathbf{u}^{0}_{\mathrm{red}})$}
 \vspace{1mm}
 \WHILE{$\|\mcl{L}_{\mathbf{m}}(\mbf{m}^k,\mbf{u}^k_{\mathrm{red}},\mbf{v}^k_{\mathrm{red}})\|_2 \geq \epsilon$}
 \vspace{1mm}
@@ -208,7 +208,7 @@ $\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\mathrm{red}},\mbf{v}^*_{\mathrm{red}})\|_
 \vspace{1mm}
 \STATE{$\mathbf{u}^{k+1}_{\mathrm{red}}  = A(\mathbf{m}^{k+1})^{-1}\mathbf{q}$}
 \vspace{2mm}
-\STATE{$\mathbf{v}^{k+1}_{\mathrm{red}}  = A(\mathbf{m}^{k+1})^{-T}P(\mathbf{d} - P\mathbf{u}^{k+1}_{\mathrm{red}})$}
+\STATE{$\mathbf{v}^{k+1}_{\mathrm{red}}  = A(\mathbf{m}^{k+1})^{-T}P^T\!(\mathbf{d} - P\mathbf{u}^{k+1}_{\mathrm{red}})$}
 \vspace{1mm}
 \STATE{$k = k + 1$}
 \ENDWHILE
@@ -289,7 +289,7 @@ and define a reduced objective:
 \eq
 The optimization problem for the state (\ref{eq:ul}) has a closed-form solution:
 \[
-\mbf{u}_{\lambda} = \left(A(\mathbf{m})^T\!A(\mathbf{m}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m})^T\mbf{q} + \lambda^{-1}P\mbf{d}\right).
+\mbf{u}_{\lambda} = \left(A(\mathbf{m})^T\!A(\mathbf{m}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m})^T\mbf{q} + \lambda^{-1}P^T\!\mbf{d}\right).
 \]
 The modified system $A^T\!A + \lambda^{-1}P^T\!P$ is a low-rank modification of the original PDE and incorporates the measurements in the PDE solve. This is the main difference with the conventional reduced approach (cf. Algorithm \ref{alg:reduced}); the estimate of the state is not only based on the physics and the current model, but also on the data.
 
@@ -311,7 +311,7 @@ A basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algor
 \begin{algorithmic}
 \REQUIRE{initial guess $\mbf{m}^0$, penalty parameter $\lambda$, tolerance $\epsilon$}
 \STATE{$k=0$}
-\STATE{$\mathbf{u}^{0}_{\lambda}  = \left(A(\mathbf{m}^{0})^TA(\mathbf{m}^{0}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m}^{0})^T\mbf{q} + \lambda^{-1}P\mbf{d}\right)$}
+\STATE{$\mathbf{u}^{0}_{\lambda}  = \left(A(\mathbf{m}^{0})^TA(\mathbf{m}^{0}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m}^{0})^T\mbf{q} + \lambda^{-1}P^T\!\mbf{d}\right)$}
 \STATE{$\mathbf{v}^{0}_{\lambda}  = \lambda(A(\mathbf{m}^{0})\mathbf{u}^{0}_{\lambda} - \mathbf{q})$}
 
 \WHILE{$\|\mcl{L}_{\mathbf{m}}(\mbf{m}^k,\mbf{u}^k_{\lambda},\mbf{v}^k_{\lambda})\|_2 \geq \epsilon$}
@@ -324,7 +324,7 @@ A basic Gauss-Newton algorithm for minimizing $\phi_{\lambda}$ is shown in Algor
 \vspace{1mm}
 \STATE{$\mathbf{m}^{k+1}        = \mathbf{m}^k - \alpha^k \left(H_{\lambda}^{k}\right)^{-1}\mathbf{g}^k_{\lambda}$}
 \vspace{1mm}
-\STATE{$\mathbf{u}^{k+1}_{\lambda}  = \left(A(\mathbf{m}^{k+1})^TA(\mathbf{m}^{k+1}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m}^{k+1})^T\mbf{q} + \lambda^{-1}P\mbf{d}\right)$}
+\STATE{$\mathbf{u}^{k+1}_{\lambda}  = \left(A(\mathbf{m}^{k+1})^TA(\mathbf{m}^{k+1}) + \lambda^{-1}P^T\!P\right)^{-1}\left(A(\mathbf{m}^{k+1})^T\mbf{q} + \lambda^{-1}P^T\!\mbf{d}\right)$}
 \vspace{2mm}
 \STATE{$\mathbf{v}^{k+1}_{\lambda}  = \lambda(A(\mathbf{m}^{k+1})\mathbf{u}^{k+1}_{\lambda} - \mathbf{q})$}
 \vspace{1mm}
@@ -396,8 +396,8 @@ we have $\|\nabla\mcl{L}(\mbf{m}^*,\mbf{u}^*_{\lambda},\mbf{v}^*_{\lambda})\|_2\
 Using the definitions of $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ we find
 for any $\mbf{m}$
 \bq
-\mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P(P\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
-&=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P(P\mbf{u}_{\lambda} - \mbf{d}) = 0.
+\mcl{L}_{\mathbf{u}}(\mbf{m},\mbf{u}_{\lambda},\mbf{v}_{\lambda}) &=& A(\mbf{m})^T\mbf{v}_{\lambda} + P^T\!(P\mbf{u}_{\lambda} - \mbf{d})\nonumber\\
+&=& \lambda A^T(A\mbf{u}_{\lambda} - \mbf{q}) + P^T\!(P\mbf{u}_{\lambda} - \mbf{d}) = 0.
 \eq
 Using the approximations for $\mbf{u}_{\lambda}$ and $\mbf{v}_{\lambda}$ for $\lambda>\|PA^{-1}\|_2^2$ presented in Lemma \ref{lemma}, we find
 \bq
@@ -492,7 +492,7 @@ H(\mbf{m}^*_{\lambda} - \mbf{m}^*) = \mcl{L}_{\mbf{m}}(\mbf{m}^*_{\lambda}, \mbf
 \eq
 where 
 \[
-H = R - K^TA^{-1}G-G^TA^{-T}K + G^TA^{-T}P^TPA^{-1}G
+H = R - K^TA^{-1}G-G^TA^{-T}K + G^TA^{-T}P^T\!PA^{-1}G
 \]
 is the reduced Hessian and
 \[
@@ -514,13 +514,13 @@ we find
 \[
 \|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq ||H^{-1}||_2\left(\epsilon +  \widetilde{\lambda}^{-1} \|G^T\!A^{-T}\!P^T\|_2\eta\right),
 \]
-where $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$ denotes the data-error.
-
-Introducing the scaled tolerance and data-error we express this as
+where $\eta = \|\mathbf{d} - PA(\mbf{m}^*_{\lambda})^{-1}\mbf{q}\|_2$ denotes the data-error. Introducing the scaled tolerance and data-error we express this as
 \[
 \|\mbf{m}^*_{\lambda} - \mbf{m}^*\|_2 \leq \kappa(H)\left(\widetilde{\epsilon} +  \widetilde{\lambda}^{-1} \widetilde{\eta}\right).
 \]
+\qed
 \end{proof}
+
 %\begin{remark}
 %We may also express equation (\ref{eq:dm}) as
 %\[
@@ -588,7 +588,7 @@ Given these solutions $\mbf{u}_k$ of (\ref{eq:u_pen}), the gradient, $\mbf{g}_{\
 \mbf{g}_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\!\left(A_k\mathbf{u}_{k} - \mathbf{q}_{k}\right),\\
 H_{\lambda} &=& \lambda\sum_{k=1}^K G_k^T\!\left(I - A_k\left(A_k^T\!A_k + \lambda^{-1}P_k^T\!P_k\right)^{-1}A_k^T \right)G_k,
 \eq
-where $G_k = G(\mbf{m},\mbf{u}_k)$. We can compute the inverse of $\left(A_k^TA_k + \lambda^{-1}P_kP_k^T\right)$ in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the results on the fly. Moreover, the Gauss-Newton Hessian admits a natural sparse approximation $H_{\lambda} \approx \lambda\sum_{k=1}^K G_k^TG_k$ which has proved to work well in practice \cite{esser_automatic_2015}.
+where $G_k = G(\mbf{m},\mbf{u}_k)$. We can compute the inverse of $\left(A_k^TA_k + \lambda^{-1}P_k^T\!P_k\right)$ in the same way as used when solving for the states. In practice, we would solve for one state at a time and aggregate the results on the fly. Moreover, the Gauss-Newton Hessian admits a natural sparse approximation $H_{\lambda} \approx \lambda\sum_{k=1}^K G_k^TG_k$ which has proved to work well in practice \cite{esser_automatic_2015}.
 
 \subsection{Choosing $\lambda$}
 An important aspect of the proposed method is the choice of the penalty parameter, $\lambda$. Theorem \ref{theorem1} essentially states that we can expect to find a stationary point of the Lagrangian within finite accuracy with finite $\lambda$ as long as $\lambda^{-1}\|\mcl{L}_{\mbf{v}}\|_2$ is small compared to $\|\mcl{L}_{\mbf{m}}\|_2$.
